@@ -47,15 +47,14 @@
       box-sizing: border-box;
     }
 
-    /* Lock root viewport so Firefox Android never shifts bottom bar during scroll */
+    /* Fixed-height non-scrolling root so list scrolls internally without blocking Android IME */
     html, body {
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100%;
+      height: 100dvh;
       overflow: hidden;
-      position: fixed;
-      inset: 0;
       background-color: #F7F8FA;
       color: #1E293B;
       font-family: -apple-system, BlinkMacSystemFont, "Flyme Sans", "PingFang SC", "MiSans", "HarmonyOS Sans SC", "Microsoft YaHei", sans-serif;
@@ -73,6 +72,7 @@
     .inline-flex { display: inline-flex; }
     .grid { display: grid; }
     .items-center { align-items: center; }
+    .items-start { align-items: flex-start; }
     .justify-between { justify-content: space-between; }
     .justify-center { justify-content: center; }
     .flex-col { flex-direction: column; }
@@ -89,9 +89,10 @@
     .nowrap-pill {
       white-space: nowrap !important;
       flex-shrink: 0 !important;
+      touch-action: manipulation;
     }
 
-    /* App Shell: Fixed Flex Column with Internal Scroll Only */
+    /* App Shell: Flex Column with Internal Scroll Only */
     #appShell {
       width: 100%;
       height: 100%;
@@ -112,50 +113,36 @@
       padding-bottom: 24px;
     }
 
-    /* Solid Locked Bottom Navigation Bar */
+    /* Solid Locked Bottom Navigation Bar (No heavy blur to keep 60fps in Firefox) */
     #bottomNavDock {
       flex-shrink: 0;
       width: 100%;
       padding-bottom: var(--safe-bottom);
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-top: 1px solid rgba(226, 232, 240, 0.85);
+      background: #FFFFFF;
+      border-top: 1px solid rgba(226, 232, 240, 0.9);
       z-index: 30;
     }
     html.dark #bottomNavDock {
-      background: rgba(17, 20, 29, 0.96);
-      border-top: 1px solid rgba(30, 41, 59, 0.85);
+      background: #121620;
+      border-top: 1px solid rgba(30, 41, 59, 0.9);
     }
 
     .spring-transition {
-      transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, opacity 0.25s ease, transform 0.3s var(--spring-ease);
+      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, opacity 0.18s ease;
     }
     .tap-scale:active {
       transform: scale(0.96);
     }
 
-    @keyframes slideUpSheet {
-      0% { opacity: 0; transform: translateY(24px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-    .animate-card-in {
-      animation: slideUpSheet 0.32s var(--spring-ease) forwards;
-    }
-
     .todo-check-circle {
-      transition: all 0.28s var(--bounce-ease);
+      transition: transform 0.22s var(--bounce-ease), background-color 0.2s ease;
     }
 
-    .flyme-glass {
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
+    .flyme-header-surface {
+      background: #FFFFFF;
     }
-    .dark .flyme-glass {
-      background: rgba(15, 18, 26, 0.92);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
+    .dark .flyme-header-surface {
+      background: #121620;
     }
 
     .meizu-frame-active {
@@ -175,11 +162,11 @@
   <div id="ambientOrb1" class="hidden"></div>
   <div id="ambientOrb2" class="hidden"></div>
 
-  <!-- Fixed App Shell: Top Header + Scrollable Main + Locked Bottom Nav -->
+  <!-- App Shell: Top Header + Scrollable Main + Locked Bottom Nav -->
   <div id="appShell">
 
-    <!-- Minimalist Single-Line Top Bar (Never wraps vertically) -->
-    <header class="shrink-0 px-4 pt-3 pb-2.5 flyme-glass border-b border-slate-200/60 dark:border-slate-800/70 flex items-center justify-between gap-2">
+    <!-- Minimalist Single-Line Top Bar -->
+    <header class="shrink-0 px-4 pt-3 pb-2.5 flyme-header-surface border-b border-slate-200/70 dark:border-slate-800/80 flex items-center justify-between gap-2">
       <!-- Left: Clean Title + Short Date -->
       <div class="flex items-baseline gap-2 min-w-0 shrink-0">
         <h1 class="font-bold text-lg tracking-tight text-slate-900 dark:text-white whitespace-nowrap">浮光记</h1>
@@ -219,11 +206,11 @@
       </div>
     </header>
 
-    <!-- Scrollable Main Area (Independent scroll so bottom bar never moves) -->
-    <main id="mainScrollArea" class="px-4 pt-3 space-y-4">
+    <!-- Scrollable Main Area -->
+    <main id="mainScrollArea" class="px-4 pt-3 space-y-3.5">
 
-      <!-- VIEW 1: 三时与待办 (Minimalist & High-Focus) -->
-      <div id="viewTimelineSection" class="space-y-3.5">
+      <!-- VIEW 1: 三时与待办 -->
+      <div id="viewTimelineSection" class="space-y-3">
 
         <!-- Slim Date & 7-Day Strip -->
         <div class="bg-white dark:bg-flyme-darkCard rounded-2xl px-3.5 py-2.5 border border-slate-200/60 dark:border-slate-800/80">
@@ -252,7 +239,7 @@
           <div id="weekStripContainer" class="grid grid-cols-7 gap-1"></div>
         </div>
 
-        <!-- Single-Line Horizontal Filter Pills (Strictly No Vertical Wrapping) -->
+        <!-- Single-Line Horizontal Filter Pills -->
         <div class="flex items-center justify-between gap-2">
           <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
             <button onclick="setTimelineFilter('all')" data-filter-pill="all" class="timeline-filter-btn px-3 py-1 rounded-full text-xs font-medium tap-scale">全部时段</button>
@@ -265,13 +252,11 @@
         </div>
 
         <!-- Clean Period Sections List -->
-        <div id="periodsGridContainer" class="space-y-3">
-          <!-- Rendered by JS -->
-        </div>
+        <div id="periodsGridContainer" class="space-y-3"></div>
       </div>
 
-      <!-- VIEW 2: 随想录 (Minimalist Thoughts Stream) -->
-      <div id="viewThoughtsSection" class="hidden space-y-3.5">
+      <!-- VIEW 2: 随想录 -->
+      <div id="viewThoughtsSection" class="hidden space-y-3">
         <!-- Slim 23:00 Bar -->
         <div class="bg-white dark:bg-flyme-darkCard rounded-2xl p-3.5 border border-slate-200/60 dark:border-slate-800 flex items-center justify-between gap-2">
           <div class="min-w-0">
@@ -310,7 +295,7 @@
 
     </main>
 
-    <!-- LOCKED BOTTOM BAR (Static Flex Footer - Never Jitters in Firefox Scroll) -->
+    <!-- LOCKED BOTTOM BAR -->
     <nav id="bottomNavDock" aria-label="主导航">
       <div class="px-4 py-2 flex items-center justify-between gap-2">
         <!-- Tab 1: 三时与待办 -->
@@ -344,61 +329,65 @@
 
   </div>
 
-  <!-- SLIDE-UP COMPOSER SHEET (Hidden by default so main view stays clean & uncluttered) -->
-  <div id="composerSheetModal" onclick="handleComposerBackdropClick(event)" class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center bg-slate-900/45 backdrop-blur-xs">
-    <div class="bg-white dark:bg-flyme-darkCard w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-4 sm:p-5 shadow-2xl border-t sm:border border-slate-200/70 dark:border-slate-800 animate-card-in space-y-3.5">
-      <div class="flex items-center justify-between">
-        <div class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800">
-          <button id="composerModeTodoBtn" onclick="setComposerMode('todo')" class="px-3 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-slate-700 text-blue-600 dark:text-white shadow-xs">
+  <!-- TOP-ANCHORED COMPOSER MODAL:
+       1. Positioned at top (items-start pt-2.5) so the bottom Android keyboard NEVER overlaps or hides buttons!
+       2. Zero backdrop-blur & zero transform animation so IME keyboard pops up in 0ms without frame drop! -->
+  <div id="composerSheetModal" onclick="handleComposerBackdropClick(event)" class="fixed inset-0 z-50 hidden items-start justify-center pt-2.5 px-3 sm:items-center bg-slate-900/40">
+    <div class="bg-white dark:bg-flyme-darkCard w-full max-w-lg rounded-3xl p-3.5 sm:p-5 shadow-xl border border-slate-200/80 dark:border-slate-800 space-y-2.5">
+      <!-- Top Row: Mode Switcher + Close Button -->
+      <div class="flex items-center justify-between gap-2">
+        <div class="inline-flex p-0.5 rounded-xl bg-slate-100 dark:bg-slate-800">
+          <button id="composerModeTodoBtn" type="button" onclick="setComposerMode('todo')" class="px-3 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-slate-700 text-blue-600 dark:text-white">
             ✨ 记录三时 & 待办
           </button>
-          <button id="composerModeThoughtBtn" onclick="setComposerMode('thought')" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400">
+          <button id="composerModeThoughtBtn" type="button" onclick="setComposerMode('thought')" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400">
             🍃 随想闪念
           </button>
         </div>
         <span id="composerHintText" class="hidden"></span>
-        <button onclick="closeComposerSheet()" class="p-1.5 rounded-full text-slate-400 hover:text-slate-600 text-xs">✕</button>
+        <button type="button" onclick="closeComposerSheet()" class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center text-xs">✕</button>
       </div>
 
-      <textarea id="quickCaptureInput" rows="3" placeholder="写下此刻做的事、今日待办或闪念..." onkeydown="handleComposerKeydown(event)" class="w-full rounded-2xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-700/70 px-3.5 py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 resize-none"></textarea>
+      <!-- Compact Input Area (2 rows so entire card stays well above the keyboard) -->
+      <textarea id="quickCaptureInput" rows="2" placeholder="写下此刻做的事、今日待办或闪念..." onkeydown="handleComposerKeydown(event)" class="w-full rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 px-3.5 py-2 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 resize-none"></textarea>
 
       <!-- Options for To-Do -->
-      <div id="todoComposerOptions" class="space-y-3">
+      <div id="todoComposerOptions" class="space-y-2">
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-          <button type="button" onclick="selectComposerPeriod('morning')" data-period-btn="morning" class="composer-period-pill px-3 py-1.5 rounded-xl text-xs font-medium border tap-scale">🌅 早上</button>
-          <button type="button" onclick="selectComposerPeriod('noon')" data-period-btn="noon" class="composer-period-pill px-3 py-1.5 rounded-xl text-xs font-medium border tap-scale">☀️ 中午</button>
-          <button type="button" onclick="selectComposerPeriod('evening')" data-period-btn="evening" class="composer-period-pill px-3 py-1.5 rounded-xl text-xs font-medium border tap-scale">🌙 晚上</button>
-          <button type="button" onclick="selectComposerPeriod('wish')" data-period-btn="wish" class="composer-period-pill px-3 py-1.5 rounded-xl text-xs font-medium border tap-scale">🎯 今日想做</button>
+          <button type="button" onclick="selectComposerPeriod('morning')" data-period-btn="morning" class="composer-period-pill px-2.5 py-1 rounded-xl text-xs font-medium border tap-scale">🌅 早上</button>
+          <button type="button" onclick="selectComposerPeriod('noon')" data-period-btn="noon" class="composer-period-pill px-2.5 py-1 rounded-xl text-xs font-medium border tap-scale">☀️ 中午</button>
+          <button type="button" onclick="selectComposerPeriod('evening')" data-period-btn="evening" class="composer-period-pill px-2.5 py-1 rounded-xl text-xs font-medium border tap-scale">🌙 晚上</button>
+          <button type="button" onclick="selectComposerPeriod('wish')" data-period-btn="wish" class="composer-period-pill px-2.5 py-1 rounded-xl text-xs font-medium border tap-scale">🎯 今日想做</button>
         </div>
 
-        <div class="flex items-center justify-between gap-2 pt-1">
-          <div class="flex items-center gap-2">
+        <div class="flex items-center justify-between gap-2 pt-0.5">
+          <div class="flex items-center gap-1.5">
             <button type="button" id="composerDoneStateBtn" onclick="toggleComposerDoneState()" class="px-2.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 tap-scale">
               ⏳ 设为待办
             </button>
-            <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-xl">
+            <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-xl">
               <span class="text-xs text-slate-400">🔔</span>
               <input type="time" id="todoRemindTimeInput" title="提醒时间" class="bg-transparent text-xs text-slate-700 dark:text-slate-200 focus:outline-none" />
               <button type="button" onclick="clearTodoRemindTime()" class="text-slate-400 hover:text-slate-600 text-xs px-0.5">×</button>
             </div>
           </div>
 
-          <button type="button" onclick="submitComposerItem()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold tap-scale">
+          <button type="button" onclick="submitComposerItem()" class="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold tap-scale">
             收进时光
           </button>
         </div>
       </div>
 
       <!-- Options for Thought -->
-      <div id="thoughtComposerOptions" class="hidden space-y-3">
-        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-          <button type="button" onclick="selectThoughtCategory('闪念')" data-thought-cat="闪念" class="thought-cat-pill px-3 py-1 rounded-xl text-xs font-medium border tap-scale">💡 闪念</button>
-          <button type="button" onclick="selectThoughtCategory('感悟')" data-thought-cat="感悟" class="thought-cat-pill px-3 py-1 rounded-xl text-xs font-medium border tap-scale">🌊 感悟</button>
-          <button type="button" onclick="selectThoughtCategory('灵感')" data-thought-cat="灵感" class="thought-cat-pill px-3 py-1 rounded-xl text-xs font-medium border tap-scale">✨ 灵感</button>
-          <button type="button" onclick="selectThoughtCategory('晚安小结')" data-thought-cat="晚安小结" class="thought-cat-pill px-3 py-1 rounded-xl text-xs font-medium border tap-scale">🌙 晚安小结</button>
-        </div>
-        <div class="flex items-center justify-end">
-          <button type="button" onclick="submitComposerItem()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold tap-scale">
+      <div id="thoughtComposerOptions" class="hidden space-y-2">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            <button type="button" onclick="selectThoughtCategory('闪念')" data-thought-cat="闪念" class="thought-cat-pill px-2.5 py-1 rounded-xl text-xs font-medium border tap-scale">💡 闪念</button>
+            <button type="button" onclick="selectThoughtCategory('感悟')" data-thought-cat="感悟" class="thought-cat-pill px-2.5 py-1 rounded-xl text-xs font-medium border tap-scale">🌊 感悟</button>
+            <button type="button" onclick="selectThoughtCategory('灵感')" data-thought-cat="灵感" class="thought-cat-pill px-2.5 py-1 rounded-xl text-xs font-medium border tap-scale">✨ 灵感</button>
+            <button type="button" onclick="selectThoughtCategory('晚安小结')" data-thought-cat="晚安小结" class="thought-cat-pill px-2.5 py-1 rounded-xl text-xs font-medium border tap-scale">🌙 晚安小结</button>
+          </div>
+          <button type="button" onclick="submitComposerItem()" class="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold tap-scale shrink-0">
             落笔随想
           </button>
         </div>
@@ -407,8 +396,8 @@
   </div>
 
   <!-- MODAL 1: Notification Engine & 23:00 Daily Thought Reminder Settings -->
-  <div id="notificationModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
-    <div class="bg-white dark:bg-flyme-darkCard w-full max-w-md rounded-3xl p-5 shadow-2xl border border-slate-200/70 dark:border-slate-800 animate-card-in space-y-4 max-h-[88dvh] overflow-y-auto">
+  <div id="notificationModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/45">
+    <div class="bg-white dark:bg-flyme-darkCard w-full max-w-md rounded-3xl p-5 shadow-2xl border border-slate-200/70 dark:border-slate-800 space-y-4 max-h-[88dvh] overflow-y-auto">
       <div class="flex items-center justify-between">
         <h3 class="font-semibold text-base text-slate-900 dark:text-white">通知与每晚 23:00 随想提醒</h3>
         <button onclick="closeNotificationCenterModal()" class="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500">✕</button>
@@ -460,16 +449,16 @@
     </div>
   </div>
 
-  <!-- MODAL 2: 23:00 Nightly Thought Popup -->
-  <div id="nightlyReflectionModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
-    <div class="bg-[#131826] text-white w-full max-w-md rounded-3xl p-5 shadow-2xl border border-indigo-500/30 animate-card-in space-y-3.5">
+  <!-- MODAL 2: 23:00 Nightly Thought Popup (Also top-aligned on mobile so keyboard doesn't cover it) -->
+  <div id="nightlyReflectionModal" class="fixed inset-0 z-50 hidden items-start pt-4 sm:items-center justify-center p-4 bg-slate-950/60">
+    <div class="bg-[#131826] text-white w-full max-w-md rounded-3xl p-5 shadow-2xl border border-indigo-500/30 space-y-3">
       <div class="flex items-center justify-between">
         <span class="text-xs font-medium text-indigo-300">🌙 23:00 夜阑随想</span>
         <button onclick="closeNightlyReflectionModal()" class="text-slate-400 hover:text-white text-xs">关闭</button>
       </div>
       <h3 class="text-base font-semibold">夜深了，今天有什么想留下的随想吗？</h3>
       <p id="nightlySummaryLine" class="text-xs text-slate-300/80">写下此刻脑海里的念头吧。</p>
-      <textarea id="nightlyQuickThoughtInput" rows="3" placeholder="此刻的思绪、今天的收获..." class="w-full rounded-2xl bg-white/10 border border-white/15 p-3 text-sm text-white placeholder:text-slate-400 focus:outline-none resize-none"></textarea>
+      <textarea id="nightlyQuickThoughtInput" rows="2" placeholder="此刻的思绪、今天的收获..." class="w-full rounded-2xl bg-white/10 border border-white/15 p-3 text-sm text-white placeholder:text-slate-400 focus:outline-none resize-none"></textarea>
       <div class="flex items-center justify-end gap-2">
         <button onclick="closeNightlyReflectionModal()" class="px-3.5 py-2 rounded-xl bg-white/10 text-xs text-slate-300 tap-scale">稍后再记</button>
         <button onclick="saveNightlyReflectionThought()" class="px-4 py-2 rounded-xl bg-indigo-500 text-xs font-semibold text-white tap-scale">✨ 存入今夜随想录</button>
@@ -478,8 +467,8 @@
   </div>
 
   <!-- MODAL 3: Supabase Cloud Sync -->
-  <div id="supabaseSyncModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
-    <div class="bg-white dark:bg-flyme-darkCard w-full max-w-lg rounded-3xl p-5 shadow-2xl border border-slate-200/70 dark:border-slate-800 animate-card-in space-y-3.5 max-h-[88dvh] overflow-y-auto">
+  <div id="supabaseSyncModal" class="fixed inset-0 z-50 hidden items-start pt-3 sm:items-center justify-center p-4 bg-slate-900/45">
+    <div class="bg-white dark:bg-flyme-darkCard w-full max-w-lg rounded-3xl p-5 shadow-2xl border border-slate-200/70 dark:border-slate-800 space-y-3.5 max-h-[88dvh] overflow-y-auto">
       <div class="flex items-center justify-between">
         <h3 class="font-semibold text-base text-slate-900 dark:text-white">Supabase 手机 · 电脑云同步</h3>
         <button onclick="closeSyncModal()" class="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500">✕</button>
@@ -835,24 +824,27 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       selectDate(getTodayDateString(0));
     }
 
-    // Slide-up Composer Sheet
+    // Instant Top-Anchored Composer Sheet (0ms synchronous focus for instant IME popup)
     function openComposerSheet(defaultMode, defaultPeriod) {
-      if (defaultMode) setComposerMode(defaultMode);
-      else setComposerMode(appState.activeTab === 'thoughts' ? 'thought' : 'todo');
-      if (defaultPeriod) selectComposerPeriod(defaultPeriod);
+      const targetMode = defaultMode || (appState.activeTab === 'thoughts' ? 'thought' : 'todo');
+      if (defaultPeriod) appState.composerPeriod = defaultPeriod;
+      setComposerMode(targetMode);
 
       const modal = document.getElementById('composerSheetModal');
+      const input = document.getElementById('quickCaptureInput');
       if (modal) {
         modal.classList.remove('hidden');
         modal.classList.add('flex');
-        setTimeout(() => {
-          document.getElementById('quickCaptureInput')?.focus();
-        }, 60);
+      }
+      if (input) {
+        input.focus({ preventScroll: true });
       }
     }
 
     function closeComposerSheet() {
       const modal = document.getElementById('composerSheetModal');
+      const input = document.getElementById('quickCaptureInput');
+      if (input) input.blur();
       if (modal) {
         modal.classList.add('hidden');
         modal.classList.remove('flex');
@@ -874,13 +866,13 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       const input = document.getElementById('quickCaptureInput');
 
       if (mode === 'todo') {
-        todoBtn.className = 'px-3 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-slate-700 text-blue-600 dark:text-white shadow-xs';
+        todoBtn.className = 'px-3 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-slate-700 text-blue-600 dark:text-white';
         thoughtBtn.className = 'px-3 py-1 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400';
         todoOpts.classList.remove('hidden');
         thoughtOpts.classList.add('hidden');
         if (input) input.placeholder = PERIOD_META[appState.composerPeriod].placeholder;
       } else {
-        thoughtBtn.className = 'px-3 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-xs';
+        thoughtBtn.className = 'px-3 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-slate-700 text-indigo-600 dark:text-white';
         todoBtn.className = 'px-3 py-1 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400';
         todoOpts.classList.add('hidden');
         thoughtOpts.classList.remove('hidden');
@@ -894,6 +886,7 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       const input = document.getElementById('quickCaptureInput');
       if (input && appState.composerMode === 'todo') {
         input.placeholder = PERIOD_META[period].placeholder;
+        input.focus({ preventScroll: true });
       }
       renderComposerPills();
     }
@@ -917,9 +910,9 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       document.querySelectorAll('.composer-period-pill').forEach(btn => {
         const p = btn.getAttribute('data-period-btn');
         if (p === appState.composerPeriod) {
-          btn.className = 'composer-period-pill px-3 py-1.5 rounded-xl text-xs font-semibold border border-blue-500 bg-blue-500/10 text-blue-600 dark:text-blue-300 tap-scale';
+          btn.className = 'composer-period-pill px-2.5 py-1 rounded-xl text-xs font-semibold border border-blue-500 bg-blue-500/10 text-blue-600 dark:text-blue-300 tap-scale';
         } else {
-          btn.className = 'composer-period-pill px-3 py-1.5 rounded-xl text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 tap-scale';
+          btn.className = 'composer-period-pill px-2.5 py-1 rounded-xl text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 tap-scale';
         }
       });
 
@@ -937,9 +930,9 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       document.querySelectorAll('.thought-cat-pill').forEach(btn => {
         const c = btn.getAttribute('data-thought-cat');
         if (c === appState.composerThoughtCat) {
-          btn.className = 'thought-cat-pill px-3 py-1 rounded-xl text-xs font-semibold border border-indigo-500 bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 tap-scale';
+          btn.className = 'thought-cat-pill px-2.5 py-1 rounded-xl text-xs font-semibold border border-indigo-500 bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 tap-scale';
         } else {
-          btn.className = 'thought-cat-pill px-3 py-1 rounded-xl text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 tap-scale';
+          btn.className = 'thought-cat-pill px-2.5 py-1 rounded-xl text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 tap-scale';
         }
       });
     }
@@ -1347,10 +1340,12 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       playGentleChime('nightly');
       dispatchBrowserNotification('🌙 23:00 随想提醒', '今天有什么想记下来的随想吗？');
       const m = document.getElementById('nightlyReflectionModal');
+      const input = document.getElementById('nightlyQuickThoughtInput');
       if (m) {
         m.classList.remove('hidden');
         m.classList.add('flex');
       }
+      if (input) input.focus({ preventScroll: true });
     }
 
     function closeNightlyReflectionModal() {
