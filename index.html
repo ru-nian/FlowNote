@@ -1,0 +1,2031 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#F7F8FA" id="metaThemeColor" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>浮光记 FlowNote · 三时待办与23:00随想录</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Flyme Sans', 'PingFang SC', 'MiSans', 'HarmonyOS Sans SC', 'Microsoft YaHei', 'sans-serif'],
+            serif: ['"Noto Serif SC"', 'Songti SC', 'serif']
+          },
+          colors: {
+            flyme: {
+              blue: '#0066FF',
+              indigo: '#4F46E5',
+              amber: '#F59E0B',
+              rose: '#F43F5E',
+              emerald: '#10B981',
+              surface: '#F7F8FA',
+              darkSurface: '#0B0D13',
+              darkCard: '#151923'
+            }
+          },
+          boxShadow: {
+            'flyme': '0 10px 30px -10px rgba(15, 23, 42, 0.06), 0 4px 12px -2px rgba(15, 23, 42, 0.03)',
+            'flyme-hover': '0 18px 38px -12px rgba(0, 102, 255, 0.12), 0 6px 16px -4px rgba(15, 23, 42, 0.05)',
+            'capsule': '0 8px 24px -4px rgba(15, 23, 42, 0.14), 0 2px 6px -1px rgba(15, 23, 42, 0.06)'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --spring-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --bounce-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * {
+      -webkit-tap-highlight-color: transparent;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      overscroll-behavior-y: none;
+      scroll-behavior: smooth;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+
+    /* Silky Spring Animations */
+    .spring-transition {
+      transition: all 0.42s var(--spring-ease);
+    }
+    .bounce-transition {
+      transition: transform 0.38s var(--bounce-ease), opacity 0.28s ease, background-color 0.25s ease;
+    }
+    .tap-scale:active {
+      transform: scale(0.96);
+    }
+
+    /* Flyme Alive Capsule Morphing */
+    .live-capsule {
+      transition: width 0.48s var(--bounce-ease), height 0.42s var(--spring-ease), transform 0.4s var(--bounce-ease), box-shadow 0.35s ease, background-color 0.3s ease;
+      will-change: width, transform;
+    }
+    .live-capsule.expanded {
+      transform: translateY(2px) scale(1.02);
+    }
+
+    /* Card entrance & list stagger */
+    @keyframes slideUpSpring {
+      0% {
+        opacity: 0;
+        transform: translateY(16px) scale(0.985);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    .animate-card-in {
+      animation: slideUpSpring 0.45s var(--spring-ease) forwards;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.45; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.08); }
+    }
+    .animate-soft-glow {
+      animation: pulseGlow 4s ease-in-out infinite;
+    }
+
+    /* Custom Checkbox Bounce */
+    .todo-check-circle {
+      transition: all 0.35s var(--bounce-ease);
+    }
+    .todo-item-row.completed .todo-check-circle {
+      transform: scale(1.06);
+    }
+    .todo-strike {
+      position: relative;
+      transition: color 0.3s ease;
+    }
+
+    /* Frosted Glass Surfaces */
+    .flyme-glass {
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(22px) saturate(180%);
+      -webkit-backdrop-filter: blur(22px) saturate(180%);
+    }
+    .dark .flyme-glass {
+      background: rgba(21, 25, 35, 0.84);
+      backdrop-filter: blur(22px) saturate(180%);
+      -webkit-backdrop-filter: blur(22px) saturate(180%);
+    }
+
+    /* Meizu Mobile Frame Preview Mode (for Desktop testing) */
+    .meizu-frame-active {
+      max-width: 430px !important;
+      margin: 16px auto !important;
+      min-height: calc(100dvh - 32px) !important;
+      border-radius: 44px !important;
+      box-shadow: 0 25px 70px -15px rgba(15, 23, 42, 0.28), 0 0 0 10px #1E293B !important;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Hide scrollbar while keeping scroll */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Safe area padding for Android/Meizu gesture bar */
+    .pb-safe-dock {
+      padding-bottom: calc(6.5rem + var(--safe-bottom));
+    }
+    .bottom-dock-pos {
+      bottom: calc(1rem + var(--safe-bottom));
+    }
+  </style>
+</head>
+<body class="bg-[#F6F7FB] dark:bg-[#0B0D13] text-slate-800 dark:text-slate-100 min-h-[100dvh] selection:bg-blue-500/20 transition-colors duration-300">
+
+  <!-- Ambient Background Orbs (Flyme Alive Design light field) -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div id="ambientOrb1" class=" -top-24 -left-24 w-96 h-96 rounded-full bg-gradient-to-br from-amber-200/40 via-sky-200/30 to-transparent dark:from-blue-900/20 dark:via-indigo-900/15 blur-3xl animate-soft-glow"></div>
+    <div id="ambientOrb2" class=" top-1/3 -right-28 w-96 h-96 rounded-full bg-gradient-to-tl from-blue-200/35 via-indigo-200/25 to-transparent dark:from-indigo-900/20 dark:via-purple-900/10 blur-3xl animate-soft-glow" style="animation-delay: 1.5s;"></div>
+  </div>
+
+  <!-- Main Shell Container (Supports Full Responsive & Meizu 21 Frame Preview) -->
+  <div id="appShell" class="relative z-10 w-full max-w-6xl mx-auto min-h-[100dvh] flex flex-col pb-safe-dock spring-transition">
+
+    <!-- Flyme Top Status Bar & Aicy Live Capsule (魅族实况流体胶囊) -->
+    <header class="sticky top-0 z-40 pt-3 pb-2 px-4 sm:px-6 flyme-glass border-b border-slate-200/60 dark:border-slate-800/70">
+      <div class="flex items-center justify-between gap-2">
+        <!-- Brand & Current Period Indicator -->
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <h1 class="font-semibold text-base tracking-tight text-slate-900 dark:text-white">浮光记</h1>
+              <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">Flyme Light</span>
+            </div>
+            <p id="headerDateGreeting" class="text-xs text-slate-500 dark:text-slate-400">加载时间中...</p>
+          </div>
+        </div>
+
+        <!-- Center Aicy Live Capsule (魅族实况胶囊：显示同步状态 + 23:00随想倒计时 + 通知提醒) -->
+        <button id="liveCapsuleBtn" onclick="toggleNotificationCenterModal()" title="点击查看通知引擎与23:00随想提醒" class="live-capsule group relative flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/95 dark:bg-slate-800/95 text-white shadow-capsule hover:bg-slate-900 tap-scale">
+          <!-- Punch-hole indicator dot -->
+          <span id="capsuleStatusDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="capsuleText" class="text-xs font-medium tracking-wide whitespace-nowrap">23:00 随想守候中</span>
+          <span id="capsuleSubBadge" class="hidden sm:inline-flex items-center px-1.5 py-0.2 rounded-full text-[10px] bg-white/15 text-amber-300 font-mono">--:--</span>
+        </button>
+
+        <!-- Right Quick Tool Actions -->
+        <div class="flex items-center gap-1.5">
+          <!-- Meizu Phone Viewport Simulator Toggle (great on PC) -->
+          <button id="meizuFrameToggleBtn" onclick="toggleMeizuPhoneFrame()" title="切换魅族手机 (20:9) 视窗预览 / 宽屏模式" class="hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 tap-scale spring-transition">
+            <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="6" y="2" width="12" height="20" rx="2.5" />
+              <circle cx="12" cy="4.5" r="0.7" fill="currentColor" />
+            </svg>
+            <span id="meizuFrameLabel">魅族视窗</span>
+          </button>
+
+          <!-- Supabase Sync Status Button -->
+          <button id="syncHeaderBtn" onclick="openSyncModal()" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 tap-scale spring-transition">
+            <span id="syncIndicatorDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+            <span id="syncStatusShort" class="hidden sm:inline">本地模式</span>
+            <svg class="w-3.5 h-3.5 opacity-75" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
+            </svg>
+          </button>
+
+          <!-- Dark/Light Theme Button -->
+          <button id="themeToggleBtn" onclick="toggleTheme()" aria-label="切换深浅色模式" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 tap-scale spring-transition">
+            <svg id="themeIconSun" class="w-4 h-4 hidden dark:block text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+            </svg>
+            <svg id="themeIconMoon" class="w-4 h-4 block dark:hidden text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Body -->
+    <main class="flex-1 px-4 sm:px-6 pt-4 space-y-5">
+
+      <!-- Date Strip & Quick Overview Banner -->
+      <section class="bg-white/90 dark:bg-flyme-darkCard/90 rounded-3xl p-4 sm:p-5 shadow-flyme border border-slate-200/60 dark:border-slate-800/80 spring-transition">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-100 dark:border-slate-800/80">
+          <!-- Selected Date Navigator -->
+          <div class="flex items-center gap-2">
+            <button onclick="shiftSelectedDate(-1)" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 tap-scale" title="前一天">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
+            </button>
+            <div class="flex items-center gap-2">
+              <input type="date" id="datePickerInput" onchange="handleDatePickerChange(this.value)" class="bg-transparent font-semibold text-sm sm:text-base text-slate-900 dark:text-white focus:outline-none cursor-pointer" />
+              <button id="backToTodayBtn" onclick="jumpToToday()" class="hidden text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium tap-scale">回到今天</button>
+            </div>
+            <button onclick="shiftSelectedDate(1)" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 tap-scale" title="后一天">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+            </button>
+          </div>
+
+          <!-- Progress & Notification Quick Pills -->
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-100/90 dark:bg-slate-800/90 text-xs">
+              <span class="text-slate-500 dark:text-slate-400">今日完成度</span>
+              <div class="w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div id="dailyProgressBar" class="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full spring-transition" style="width: 0%"></div>
+              </div>
+              <span id="dailyProgressText" class="font-semibold text-slate-800 dark:text-slate-200">0/0</span>
+            </div>
+
+            <button onclick="triggerNightlyReflectionModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-indigo-500/10 hover:bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 border border-indigo-500/20 text-xs font-medium tap-scale spring-transition">
+              <span>🌙 23:00 晚间随想</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 7-Day Horizontal Quick Strip (Silky Mobile Scroll) -->
+        <div id="weekStripContainer" class="grid grid-cols-7 gap-1.5 pt-3"></div>
+      </section>
+
+      <!-- Quick Input Dock (Unified Smart Composer for To-Do & Thoughts) -->
+      <section class="bg-white dark:bg-flyme-darkCard rounded-3xl p-4 sm:p-5 shadow-flyme border border-slate-200/70 dark:border-slate-800/80 spring-transition">
+        <div class="flex items-center justify-between mb-3">
+          <!-- Mode Switcher inside Composer -->
+          <div class="inline-flex p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/90">
+            <button id="composerModeTodoBtn" onclick="setComposerMode('todo')" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-white dark:bg-slate-700 text-blue-600 dark:text-white shadow-sm">
+              ✨ 记录三时 & 待办
+            </button>
+            <button id="composerModeThoughtBtn" onclick="setComposerMode('thought')" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900">
+              🍃 随想闪念
+            </button>
+          </div>
+
+          <span id="composerHintText" class="text-[11px] text-slate-400 dark:text-slate-500 hidden sm:inline">支持回车快捷添加 · 手机端云同步</span>
+        </div>
+
+        <!-- Input Box -->
+        <div class="space-y-3">
+          <div class="relative">
+            <textarea id="quickCaptureInput" rows="2" placeholder="记录今天早上、中午、晚上做了什么，或是接下来想做的事..." onkeydown="handleComposerKeydown(event)" class="w-full rounded-2xl bg-slate-50/90 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700/70 px-4 py-3 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all resize-none"></textarea>
+          </div>
+
+          <!-- Options Row for To-Do Mode -->
+          <div id="todoComposerOptions" class="flex flex-wrap items-center justify-between gap-2">
+            <!-- Period Selector (早上 / 中午 / 晚上 / 今日想做) -->
+            <div class="flex flex-wrap items-center gap-1.5">
+              <button type="button" onclick="selectComposerPeriod('morning')" data-period-btn="morning" class="composer-period-pill px-3 py-1.5 rounded-xl text-xs font-medium border transition-all tap-scale">
+                🌅 早上
+              </button>
+              <button type="button" onclick="selectComposerPeriod('noon')" data-period-btn="noon" class="composer-period-pill px-3 py-1.5 rounded-xl text-xs font-medium border transition-all tap-scale">
+                ☀️ 中午
+              </button>
+              <button type="button" onclick="selectComposerPeriod('evening')" data-period-btn="evening" class="composer-period-pill px-3 py-1.5 rounded-xl text-xs font-medium border transition-all tap-scale">
+                🌙 晚上
+              </button>
+              <button type="button" onclick="selectComposerPeriod('wish')" data-period-btn="wish" class="composer-period-pill px-3 py-1.5 rounded-xl text-xs font-medium border transition-all tap-scale">
+                🎯 今日想做
+              </button>
+            </div>
+
+            <!-- Record Type (已做记录 vs 待办清单) + Optional Notification Time -->
+            <div class="flex flex-wrap items-center gap-2 ml-auto">
+              <!-- Toggle between 待办事项 (To-Do) and 已做记录 (Done Log) -->
+              <button type="button" id="composerDoneStateBtn" onclick="toggleComposerDoneState()" class="px-2.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-transparent hover:border-slate-300 tap-scale">
+                ⏳ 设为待办
+              </button>
+
+              <!-- Reminder Time Input -->
+              <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-xl border border-slate-200/60 dark:border-slate-700">
+                <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                </svg>
+                <input type="time" id="todoRemindTimeInput" title="设置该待办的提醒时间" class="bg-transparent text-xs text-slate-700 dark:text-slate-200 focus:outline-none" />
+                <button type="button" onclick="clearTodoRemindTime()" title="清除提醒时间" class="text-slate-400 hover:text-slate-600 text-xs px-0.5">×</button>
+              </div>
+
+              <button type="button" onclick="submitComposerItem()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md shadow-blue-500/25 tap-scale spring-transition">
+                收进时光
+              </button>
+            </div>
+          </div>
+
+          <!-- Options Row for Thought (随想录) Mode -->
+          <div id="thoughtComposerOptions" class="hidden flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <button type="button" onclick="selectThoughtCategory('闪念')" data-thought-cat="闪念" class="thought-cat-pill px-3 py-1 rounded-xl text-xs font-medium border tap-scale">💡 闪念</button>
+              <button type="button" onclick="selectThoughtCategory('感悟')" data-thought-cat="感悟" class="thought-cat-pill px-3 py-1 rounded-xl text-xs font-medium border tap-scale">🌊 感悟</button>
+              <button type="button" onclick="selectThoughtCategory('灵感')" data-thought-cat="灵感" class="thought-cat-pill px-3 py-1 rounded-xl text-xs font-medium border tap-scale">✨ 灵感</button>
+              <button type="button" onclick="selectThoughtCategory('晚安小结')" data-thought-cat="晚安小结" class="thought-cat-pill px-3 py-1 rounded-xl text-xs font-medium border tap-scale">🌙 晚安小结</button>
+            </div>
+
+            <div class="flex items-center gap-2 ml-auto">
+              <span class="text-[11px] text-slate-400 dark:text-slate-500">🔔 每晚 23:00 自动提醒回顾</span>
+              <button type="button" onclick="submitComposerItem()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-500/25 tap-scale spring-transition">
+                落笔随想
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 1: 三时与待办 (Morning / Noon / Evening + Today's Wishes) -->
+      <div id="viewTimelineSection" class="space-y-4">
+        <!-- Period Filter Tabs -->
+        <div class="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar py-0.5">
+          <div class="flex items-center gap-1.5">
+            <button onclick="setTimelineFilter('all')" data-filter-pill="all" class="timeline-filter-btn px-3.5 py-1.5 rounded-2xl text-xs font-semibold transition-all tap-scale">全部时段</button>
+            <button onclick="setTimelineFilter('morning')" data-filter-pill="morning" class="timeline-filter-btn px-3 py-1.5 rounded-2xl text-xs font-medium transition-all tap-scale">🌅 早上</button>
+            <button onclick="setTimelineFilter('noon')" data-filter-pill="noon" class="timeline-filter-btn px-3 py-1.5 rounded-2xl text-xs font-medium transition-all tap-scale">☀️ 中午</button>
+            <button onclick="setTimelineFilter('evening')" data-filter-pill="evening" class="timeline-filter-btn px-3 py-1.5 rounded-2xl text-xs font-medium transition-all tap-scale">🌙 晚上</button>
+            <button onclick="setTimelineFilter('wish')" data-filter-pill="wish" class="timeline-filter-btn px-3 py-1.5 rounded-2xl text-xs font-medium transition-all tap-scale">🎯 今日想做</button>
+          </div>
+
+          <button onclick="quickAddDemoPreset()" class="text-xs text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap px-2 py-1">
+            + 填入今日示例
+          </button>
+        </div>
+
+        <!-- 4 Quadrant Grid for Desktop / Smooth Vertical Stack for Meizu Phone -->
+        <div id="periodsGridContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Dynamically rendered by JS: Morning, Noon, Evening, Today's Wish -->
+        </div>
+      </div>
+
+      <!-- VIEW 2: 随想录 (Thoughts Stream & 23:00 Nightly Archive) -->
+      <div id="viewThoughtsSection" class="hidden space-y-4">
+        <!-- Thoughts Top Banner with 23:00 Notification Card -->
+        <div class="bg-gradient-to-r from-indigo-600/95 via-blue-600/95 to-slate-900 rounded-3xl p-4 sm:p-5 text-white shadow-flyme flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-white/20 backdrop-blur-sm">每晚 23:00 准时唤醒</span>
+              <span id="thoughtNightlyStatusBadge" class="text-xs text-emerald-300 font-medium">● 已开启守候</span>
+            </div>
+            <h2 class="text-base sm:text-lg font-semibold tracking-tight font-serif">随想录 · 捕住转瞬即逝的微光</h2>
+            <p class="text-xs text-blue-100/85">白天随时记下吉光片羽，每晚 11 点收到温柔通知，与自己对话。</p>
+          </div>
+          <div class="flex items-center gap-2 self-start sm:self-center">
+            <button onclick="triggerNightlyReflectionModal()" class="px-3.5 py-2 rounded-2xl bg-white text-slate-900 text-xs font-semibold shadow-sm hover:bg-blue-50 tap-scale">
+              体验 23:00 推送弹窗
+            </button>
+            <button onclick="toggleNotificationCenterModal()" class="px-3 py-2 rounded-2xl bg-white/15 hover:bg-white/25 text-white text-xs font-medium tap-scale">
+              通知设置
+            </button>
+          </div>
+        </div>
+
+        <!-- Search & Category Filter for Thoughts -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            <button onclick="setThoughtFilter('all')" data-tfilter="all" class="thought-filter-btn px-3 py-1.5 rounded-2xl text-xs font-semibold tap-scale">全部随想</button>
+            <button onclick="setThoughtFilter('闪念')" data-tfilter="闪念" class="thought-filter-btn px-3 py-1.5 rounded-2xl text-xs font-medium tap-scale">💡 闪念</button>
+            <button onclick="setThoughtFilter('感悟')" data-tfilter="感悟" class="thought-filter-btn px-3 py-1.5 rounded-2xl text-xs font-medium tap-scale">🌊 感悟</button>
+            <button onclick="setThoughtFilter('灵感')" data-tfilter="灵感" class="thought-filter-btn px-3 py-1.5 rounded-2xl text-xs font-medium tap-scale">✨ 灵感</button>
+            <button onclick="setThoughtFilter('晚安小结')" data-tfilter="晚安小结" class="thought-filter-btn px-3 py-1.5 rounded-2xl text-xs font-medium tap-scale">🌙 晚安小结</button>
+          </div>
+
+          <div class="relative">
+            <input type="text" id="thoughtSearchInput" oninput="renderThoughtsStream()" placeholder="搜索随想关键词..." class="w-full sm:w-56 pl-8 pr-3 py-1.5 rounded-2xl bg-white dark:bg-flyme-darkCard border border-slate-200/80 dark:border-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/40" />
+            <svg class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Thoughts Masonry / Card List -->
+        <div id="thoughtsListContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3.5"></div>
+      </div>
+
+      <!-- VIEW 3: 全景视图 (Split Side-by-Side for PC or Unified Summary) -->
+      <div id="viewOverviewSection" class="hidden space-y-4">
+        <div class="bg-white dark:bg-flyme-darkCard rounded-3xl p-5 shadow-flyme border border-slate-200/70 dark:border-slate-800">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div>
+              <h2 class="text-base font-semibold text-slate-900 dark:text-white">今日时光轴 & 随想概览</h2>
+              <p class="text-xs text-slate-500 dark:text-slate-400">早上 · 中午 · 晚上 · 待办 · 随想录 一屏尽览</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="exportDataJson()" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-xs font-medium tap-scale">导出 JSON 备份</button>
+              <button onclick="openSyncModal()" class="px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-medium tap-scale">配置 Supabase 同步</button>
+            </div>
+          </div>
+          <div id="overviewSummaryStats" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Floating Bottom Pill Navigation Dock (Flyme Gesture-Friendly Thumb Bar) -->
+    <nav aria-label="主导航" class="fixed left-1/2 -translate-x-1/2 bottom-dock-pos z-40 w-[92%] max-w-md">
+      <div class="flyme-glass rounded-full p-1.5 shadow-capsule border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between">
+        <button id="navTabTimeline" onclick="switchMainTab('timeline')" class="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-full text-xs font-semibold spring-transition tap-scale bg-blue-600 text-white shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+          </svg>
+          <span>三时与待办</span>
+          <span id="navBadgeTodos" class="px-1.5 py-0.2 rounded-full text-[10px] bg-white/20">0</span>
+        </button>
+
+        <button id="navTabThoughts" onclick="switchMainTab('thoughts')" class="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-full text-xs font-semibold spring-transition tap-scale text-slate-600 dark:text-slate-300 hover:text-slate-900">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+          </svg>
+          <span>随想录</span>
+          <span id="navBadgeThoughts" class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200">0</span>
+        </button>
+
+        <button id="navTabNotifications" onclick="toggleNotificationCenterModal()" class="flex items-center justify-center gap-1 py-2.5 px-3.5 rounded-full text-xs font-semibold spring-transition tap-scale text-slate-600 dark:text-slate-300 hover:text-slate-900" title="通知与提醒中心">
+          <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+          </svg>
+          <span class="hidden sm:inline">提醒</span>
+        </button>
+      </div>
+    </nav>
+
+  </div>
+
+  <!-- MODAL 1: Notification Engine & 23:00 Daily Thought Reminder Settings -->
+  <div id="notificationModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div class="bg-white dark:bg-flyme-darkCard w-full max-w-lg rounded-3xl p-5 sm:p-6 shadow-2xl border border-slate-200/70 dark:border-slate-800 animate-card-in space-y-4 max-h-[88dvh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-2xl bg-amber-500/15 text-amber-500 flex items-center justify-center">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-semibold text-base text-slate-900 dark:text-white">灵动通知引擎 · 待办与 23:00 随想</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">支持系统通知推送、Flyme 实况胶囊与轻柔提示音</p>
+          </div>
+        </div>
+        <button onclick="closeNotificationCenterModal()" class="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800">✕</button>
+      </div>
+
+      <!-- Browser Permission Status Card -->
+      <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200/70 dark:border-slate-800 flex items-center justify-between gap-3">
+        <div>
+          <div class="text-xs font-semibold text-slate-800 dark:text-slate-200">系统级通知权限 (Android / 魅族浏览器 / 桌面)</div>
+          <div id="notifPermissionDesc" class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">开启后可在锁屏或后台收到待办与 23:00 随想提醒</div>
+        </div>
+        <button id="requestPermBtn" onclick="requestSystemNotificationPermission()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold whitespace-nowrap tap-scale">
+          开启系统通知
+        </button>
+      </div>
+
+      <!-- 23:00 Nightly Thought Notification Configuration -->
+      <div class="p-4 rounded-2xl bg-gradient-to-br from-indigo-50/90 to-blue-50/60 dark:from-indigo-950/40 dark:to-slate-900 border border-indigo-200/60 dark:border-indigo-800/50 space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-sm font-semibold text-slate-900 dark:text-white">🌙 随想录每日定时通知</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/15 text-indigo-600 dark:text-indigo-300">默认 23:00</span>
+            </div>
+            <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">每天晚上 11 点准时响起轻柔风铃并弹出「今夜随想回顾」卡片</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="toggleNightlyThoughtNotif" onchange="updateNotificationSettings()" checked class="sr-only peer">
+            <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+          </label>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-indigo-200/40 dark:border-indigo-800/40">
+          <div class="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
+            <span>每日提醒时间：</span>
+            <input type="time" id="nightlyRemindTimePicker" value="23:00" onchange="updateNotificationSettings()" class="px-2.5 py-1 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono" />
+          </div>
+          <span id="countdownToNightlyText" class="text-xs font-medium text-indigo-600 dark:text-indigo-400">距离今夜提醒还有 --</span>
+        </div>
+      </div>
+
+      <!-- To-Do List Notification Configuration -->
+      <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200/70 dark:border-slate-800 space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm font-semibold text-slate-900 dark:text-white">⏰ 待办清单定时提醒</div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">当待办事项到达设定的时间点时，自动弹出通知与提示音</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="toggleTodoNotif" onchange="updateNotificationSettings()" checked class="sr-only peer">
+            <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+          </label>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-800">
+          <span class="text-xs text-slate-600 dark:text-slate-400">开启 Flyme 和弦轻音反馈</span>
+          <input type="checkbox" id="toggleSoundChime" onchange="updateNotificationSettings()" checked class="w-4 h-4 accent-blue-600 rounded" />
+        </div>
+      </div>
+
+      <!-- Instant Test Buttons -->
+      <div class="flex flex-wrap items-center justify-end gap-2 pt-2">
+        <button onclick="sendTestTodoNotification()" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 tap-scale">
+          🔔 测试待办通知
+        </button>
+        <button onclick="triggerNightlyReflectionModal()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 tap-scale">
+          🌙 立即预览 23:00 随想通知
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: 23:00 Nightly Thought & Daily Review Popup (晚上11点随想录专属弹窗) -->
+  <div id="nightlyReflectionModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md">
+    <div class="bg-gradient-to-b from-[#131826] to-[#0D101A] text-white w-full max-w-md rounded-3xl p-6 shadow-2xl border border-indigo-500/30 animate-card-in space-y-4">
+      <div class="flex items-center justify-between">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-indigo-500/20 text-indigo-300 border border-indigo-400/25">
+          <span>🌙 23:00 夜阑随想时刻</span>
+        </span>
+        <button onclick="closeNightlyReflectionModal()" class="text-slate-400 hover:text-white text-sm px-2 py-1">关闭</button>
+      </div>
+
+      <div class="space-y-1">
+        <h3 class="text-lg font-serif font-semibold">夜深了，今天有什么想留下的随想吗？</h3>
+        <p id="nightlySummaryLine" class="text-xs text-slate-300/85">今天你记录了 0 项三时轨迹，写下此刻脑海里的念头吧。</p>
+      </div>
+
+      <textarea id="nightlyQuickThoughtInput" rows="4" placeholder="此刻的思绪、今天的收获，或是给明天的自己一句话..." class="w-full rounded-2xl bg-white/10 border border-white/15 p-3.5 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"></textarea>
+
+      <div class="flex items-center justify-between gap-2 pt-1">
+        <button onclick="closeNightlyReflectionModal()" class="px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/15 text-xs text-slate-300 font-medium tap-scale">
+          稍后再记
+        </button>
+        <button onclick="saveNightlyReflectionThought()" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-400 hover:to-blue-400 text-xs font-semibold text-white shadow-lg shadow-indigo-500/30 tap-scale">
+          ✨ 存入今夜随想录
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: Supabase Cloud Sync & Mobile/PC Multi-Device Setup -->
+  <div id="supabaseSyncModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div class="bg-white dark:bg-flyme-darkCard w-full max-w-xl rounded-3xl p-5 sm:p-6 shadow-2xl border border-slate-200/70 dark:border-slate-800 animate-card-in space-y-4 max-h-[90dvh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-sm">
+            ⚡
+          </div>
+          <div>
+            <h3 class="font-semibold text-base text-slate-900 dark:text-white">Supabase 手机 · 电脑云同步中心</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">魅族手机 (Android) 与电脑端实时双向同步，支持离线自动合并</p>
+          </div>
+        </div>
+        <button onclick="closeSyncModal()" class="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800">✕</button>
+      </div>
+
+      <!-- Connection Credentials Form -->
+      <div class="space-y-3 bg-slate-50 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-200/70 dark:border-slate-800">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Supabase Project URL</label>
+          <input type="url" id="supabaseUrlInput" placeholder="https://your-project-id.supabase.co" class="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/40" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Supabase Anon Public Key</label>
+          <input type="password" id="supabaseKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." class="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/40" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">同步空间暗号 (Sync Room ID · 手机与电脑填同一个即可同步)</label>
+          <input type="text" id="supabaseRoomInput" value="meizu-flownote-main" placeholder="例如：my-meizu-21-sync" class="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/40" />
+        </div>
+
+        <div id="syncConnectionFeedback" class="text-xs text-slate-500 dark:text-slate-400 pt-1">
+          当前状态：本地离线持久存储已激活，填入上方配置即可开启跨端云同步。
+        </div>
+      </div>
+
+      <!-- 1-Click SQL Initialization Script Accordion -->
+      <div class="p-3.5 rounded-2xl bg-slate-100/80 dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">首次使用？在 Supabase SQL Editor 运行以下建表语句：</span>
+          <button onclick="copySupabaseSql()" class="px-2.5 py-1 rounded-lg bg-blue-600 text-white text-[11px] font-medium tap-scale">复制 SQL</button>
+        </div>
+        <pre id="supabaseSqlBlock" class="text-[11px] font-mono bg-slate-900 text-emerald-300 p-3 rounded-xl overflow-x-auto leading-relaxed">create table if not exists public.flownote_sync (
+  room_id text primary key,
+  payload jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.flownote_sync enable row level security;
+create policy "Allow public sync access" on public.flownote_sync
+  for all using (true) with check (true);</pre>
+      </div>
+
+      <!-- Sync Action Buttons -->
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+        <div class="flex items-center gap-2">
+          <button onclick="exportDataJson()" class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-300 tap-scale">导出备份</button>
+          <label class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer tap-scale">
+            导入恢复
+            <input type="file" accept=".json" onchange="importDataJson(event)" class="hidden" />
+          </label>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="pullFromSupabase()" class="px-3.5 py-2 rounded-xl bg-slate-200/80 dark:bg-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200 tap-scale">
+            ⬇️ 从云端拉取
+          </button>
+          <button onclick="saveAndSyncSupabase()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md shadow-emerald-500/20 tap-scale">
+            ⚡ 保存并立即同步
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast / Flyme Floating Banner -->
+  <div id="toastBanner" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 -translate-y-3 spring-transition">
+    <div class="px-4 py-2.5 rounded-full bg-slate-900/95 dark:bg-white/95 text-white dark:text-slate-900 text-xs font-medium shadow-capsule flex items-center gap-2">
+      <span id="toastIcon">✨</span>
+      <span id="toastMessage">操作成功</span>
+    </div>
+  </div>
+
+  <script>
+    /********************************************************************
+     * 浮光记 FlowNote · 初代核心架构
+     * 1. 三时与待办 (早上 Morning / 中午 Noon / 晚上 Evening / 今日想做 Wish)
+     * 2. 随想录 (Thoughts Stream) + 每晚 23:00 定时提醒
+     * 3. Supabase 手机(魅族 Android) & 电脑双向云同步 + 本地安全缓存
+     ********************************************************************/
+
+    const STORAGE_KEY = 'flownote_meizu_v1_state';
+    const SUPABASE_CFG_KEY = 'flownote_supabase_cfg_v1';
+
+    const PERIOD_META = {
+      morning: {
+        id: 'morning',
+        title: '早上 · 晨光破晓',
+        short: '早上',
+        icon: '🌅',
+        timeRange: '06:00 - 11:30',
+        placeholder: '记下早上做了什么，或晨间计划...',
+        accent: 'from-amber-500/15 to-orange-500/5 border-amber-200/70 dark:border-amber-800/40',
+        badge: 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+      },
+      noon: {
+        id: 'noon',
+        title: '中午 · 日中暖阳',
+        short: '中午',
+        icon: '☀️',
+        timeRange: '11:30 - 17:30',
+        placeholder: '记下中午做了什么，或午间安排...',
+        accent: 'from-sky-500/15 to-blue-500/5 border-sky-200/70 dark:border-sky-800/40',
+        badge: 'bg-sky-500/15 text-sky-700 dark:text-sky-300'
+      },
+      evening: {
+        id: 'evening',
+        title: '晚上 · 暮色归途',
+        short: '晚上',
+        icon: '🌙',
+        timeRange: '17:30 - 23:59',
+        placeholder: '记下晚上做了什么，或夜间复盘...',
+        accent: 'from-indigo-500/15 to-purple-500/5 border-indigo-200/70 dark:border-indigo-800/40',
+        badge: 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
+      },
+      wish: {
+        id: 'wish',
+        title: '今日想做的事 · 待办心愿',
+        short: '今日想做',
+        icon: '🎯',
+        timeRange: '全天待办清单',
+        placeholder: '今天有什么想做的事情？勾勒你的心愿单...',
+        accent: 'from-emerald-500/15 to-teal-500/5 border-emerald-200/70 dark:border-emerald-800/40',
+        badge: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+      }
+    };
+
+    // Helper for YYYY-MM-DD in local timezone
+    function getTodayDateString(offsetDays = 0) {
+      const d = new Date();
+      if (offsetDays !== 0) d.setDate(d.getDate() + offsetDays);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    // Auto-detect current time period
+    function detectCurrentPeriod() {
+      const hr = new Date().getHours();
+      if (hr >= 5 && hr < 11) return 'morning';
+      if (hr >= 11 && hr < 17) return 'noon';
+      return 'evening';
+    }
+
+    // Default initial state with warm, realistic initial records
+    const todayStr = getTodayDateString(0);
+    let appState = {
+      selectedDate: todayStr,
+      activeTab: 'timeline',
+      timelineFilter: 'all',
+      thoughtFilter: 'all',
+      composerMode: 'todo',
+      composerPeriod: detectCurrentPeriod(),
+      composerIsDoneLog: false, // false = 待办事项, true = 已做记录
+      composerThoughtCat: '闪念',
+      meizuPhoneMode: false,
+      darkMode: false,
+      notifications: {
+        nightlyEnabled: true,
+        nightlyTime: '23:00',
+        lastNightlyFiredDate: '',
+        todoNotifEnabled: true,
+        soundEnabled: true
+      },
+      updatedAt: Date.now(),
+      todos: [
+        {
+          id: 't_init_1',
+          date: todayStr,
+          period: 'morning',
+          text: '泡一杯热手冲咖啡，整理今天的轻量化日程',
+          completed: true,
+          isLog: true,
+          remindTime: '08:30',
+          notified: true,
+          createdAt: Date.now() - 14400000
+        },
+        {
+          id: 't_init_2',
+          date: todayStr,
+          period: 'noon',
+          text: '午间散步 20 分钟，放空大脑晒晒太阳',
+          completed: true,
+          isLog: true,
+          remindTime: '12:45',
+          notified: true,
+          createdAt: Date.now() - 7200000
+        },
+        {
+          id: 't_init_3',
+          date: todayStr,
+          period: 'evening',
+          text: '阅读两章喜欢的书，保持魅族手机勿扰专注 40 分钟',
+          completed: false,
+          isLog: false,
+          remindTime: '20:30',
+          notified: false,
+          createdAt: Date.now() - 3600000
+        },
+        {
+          id: 't_init_4',
+          date: todayStr,
+          period: 'wish',
+          text: '给许久未见的朋友发一条问候消息，约周末小聚',
+          completed: false,
+          isLog: false,
+          remindTime: '19:00',
+          notified: false,
+          createdAt: Date.now() - 1800000
+        }
+      ],
+      thoughts: [
+        {
+          id: 'th_init_1',
+          category: '灵感',
+          text: '真正舒服的工具应该像空气和清晨的阳光一样：需要时触手可及，不需要时安静退后。早上、中午、晚上三段式记录，比密密麻麻的时间表从容太多了。',
+          pinned: true,
+          createdAt: Date.now() - 10800000,
+          dateStr: todayStr,
+          timeStr: '09:42'
+        },
+        {
+          id: 'th_init_2',
+          category: '晚安小结',
+          text: '每晚 23:00 的随想提醒就像给白天的喧嚣画上一个温柔的句号。不用写长篇大论，哪怕只是一句“今天晚风很舒服”也值得被珍藏。',
+          pinned: false,
+          createdAt: Date.now() - 5400000,
+          dateStr: todayStr,
+          timeStr: '23:00'
+        }
+      ]
+    };
+
+    let supabaseConfig = {
+      url: '',
+      anonKey: '',
+      roomId: 'meizu-flownote-main'
+    };
+    let supabaseClient = null;
+    let realtimeChannel = null;
+    let notificationTimerId = null;
+
+    // Safe localStorage wrappers
+    function loadFromLocal() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          appState = Object.assign({}, appState, parsed);
+          appState.selectedDate = todayStr;
+        }
+        const rawCfg = localStorage.getItem(SUPABASE_CFG_KEY);
+        if (rawCfg) {
+          supabaseConfig = Object.assign({}, supabaseConfig, JSON.parse(rawCfg));
+        }
+      } catch (e) {
+        console.warn('LocalStorage read fallback:', e);
+      }
+    }
+
+    function saveToLocal(triggerCloud = true) {
+      appState.updatedAt = Date.now();
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        console.warn('LocalStorage save fallback:', e);
+      }
+      if (triggerCloud && supabaseConfig.url && supabaseConfig.anonKey) {
+        pushToSupabaseSilent();
+      }
+    }
+
+    // Web Audio API Synthesized Flyme Gentle Chime
+    function playGentleChime(type = 'todo') {
+      if (!appState.notifications || !appState.notifications.soundEnabled) return;
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const now = ctx.currentTime;
+        const notes = type === 'nightly' ? [523.25, 659.25, 783.99, 1046.5] : [587.33, 880.0];
+        notes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.11);
+          gain.gain.setValueAtTime(0.001, now + idx * 0.11);
+          gain.gain.exponentialRampToValueAtTime(0.12, now + idx * 0.11 + 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.11 + 0.65);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.11);
+          osc.stop(now + idx * 0.11 + 0.7);
+        });
+      } catch (e) {
+        // Ignore audio errors before user gesture
+      }
+    }
+
+    // Flyme Toast Banner + Live Capsule feedback
+    let toastTimeout = null;
+    function showToast(msg, icon = '✨') {
+      const banner = document.getElementById('toastBanner');
+      const iconEl = document.getElementById('toastIcon');
+      const msgEl = document.getElementById('toastMessage');
+      if (!banner) return;
+      iconEl.textContent = icon;
+      msgEl.textContent = msg;
+      banner.classList.remove('opacity-0', '-translate-y-3');
+      banner.classList.add('opacity-100', 'translate-y-0');
+
+      const capsule = document.getElementById('liveCapsuleBtn');
+      if (capsule) {
+        capsule.classList.add('expanded');
+        setTimeout(() => capsule.classList.remove('expanded'), 600);
+      }
+
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        banner.classList.remove('opacity-100', 'translate-y-0');
+        banner.classList.add('opacity-0', '-translate-y-3');
+      }, 2800);
+    }
+
+    // Theme Management
+    function applyTheme() {
+      const root = document.documentElement;
+      const metaTheme = document.getElementById('metaThemeColor');
+      if (appState.darkMode) {
+        root.classList.add('dark');
+        if (metaTheme) metaTheme.setAttribute('content', '#0B0D13');
+      } else {
+        root.classList.remove('dark');
+        if (metaTheme) metaTheme.setAttribute('content', '#F6F7FB');
+      }
+    }
+
+    function toggleTheme() {
+      appState.darkMode = !appState.darkMode;
+      applyTheme();
+      saveToLocal(false);
+      showToast(appState.darkMode ? '已切换至 Flyme 深邃夜色' : '已切换至 Flyme 凝光白昼', appState.darkMode ? '🌙' : '☀️');
+    }
+
+    // Meizu Phone Frame Toggle (for PC preview)
+    function toggleMeizuPhoneFrame() {
+      appState.meizuPhoneMode = !appState.meizuPhoneMode;
+      const shell = document.getElementById('appShell');
+      const label = document.getElementById('meizuFrameLabel');
+      const grid = document.getElementById('periodsGridContainer');
+      if (appState.meizuPhoneMode) {
+        shell.classList.add('meizu-frame-active');
+        if (label) label.textContent = '退出手机框';
+        if (grid) {
+          grid.classList.remove('md:grid-cols-2');
+          grid.classList.add('grid-cols-1');
+        }
+        showToast('已开启魅族 20:9 手机端视窗预览', '📱');
+      } else {
+        shell.classList.remove('meizu-frame-active');
+        if (label) label.textContent = '魅族视窗';
+        if (grid) {
+          grid.classList.add('md:grid-cols-2');
+        }
+        showToast('已切换为自适应宽屏视图', '💻');
+      }
+    }
+
+    // Header Greeting & Date Formatting
+    function updateHeaderGreeting() {
+      const now = new Date();
+      const hrs = now.getHours();
+      let greet = '早上好';
+      if (hrs >= 11 && hrs < 14) greet = '中午好';
+      else if (hrs >= 14 && hrs < 18) greet = '下午好';
+      else if (hrs >= 18 && hrs < 23) greet = '晚上好';
+      else if (hrs >= 23 || hrs < 5) greet = '夜深了';
+
+      const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+      const dateText = `${now.getMonth() + 1}月${now.getDate()}日 ${weekdays[now.getDay()]}`;
+      const el = document.getElementById('headerDateGreeting');
+      if (el) el.textContent = `${dateText} · ${greet}，愿今日事随心动`;
+    }
+
+    // 7-Day Horizontal Strip
+    function renderWeekStrip() {
+      const container = document.getElementById('weekStripContainer');
+      const picker = document.getElementById('datePickerInput');
+      const backBtn = document.getElementById('backToTodayBtn');
+      if (!container) return;
+
+      if (picker) picker.value = appState.selectedDate;
+      if (backBtn) {
+        if (appState.selectedDate !== getTodayDateString(0)) {
+          backBtn.classList.remove('hidden');
+        } else {
+          backBtn.classList.add('hidden');
+        }
+      }
+
+      const baseDate = new Date(appState.selectedDate + 'T00:00:00');
+      const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+      let html = '';
+
+      for (let i = -3; i <= 3; i++) {
+        const d = new Date(baseDate);
+        d.setDate(baseDate.getDate() + i);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const dStr = `${y}-${m}-${day}`;
+        const isSelected = dStr === appState.selectedDate;
+        const isToday = dStr === getTodayDateString(0);
+        const dayTodos = appState.todos.filter(t => t.date === dStr);
+        const hasItems = dayTodos.length > 0;
+
+        html += `
+          <button onclick="selectDate('${dStr}')" class="flex flex-col items-center justify-center py-2 px-1 rounded-2xl transition-all tap-scale ${
+            isSelected
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25 scale-[1.02]'
+              : 'bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }">
+            <span class="text-[10px] opacity-75">${isToday ? '今' : weekdays[d.getDay()]}</span>
+            <span class="text-xs sm:text-sm font-semibold mt-0.5">${d.getDate()}</span>
+            <span class="w-1.5 h-1.5 rounded-full mt-1 ${
+              hasItems
+                ? (isSelected ? 'bg-white' : 'bg-blue-500')
+                : 'bg-transparent'
+            }"></span>
+          </button>
+        `;
+      }
+      container.innerHTML = html;
+    }
+
+    function selectDate(dStr) {
+      appState.selectedDate = dStr;
+      renderAll();
+    }
+
+    function shiftSelectedDate(delta) {
+      const d = new Date(appState.selectedDate + 'T00:00:00');
+      d.setDate(d.getDate() + delta);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      selectDate(`${y}-${m}-${day}`);
+    }
+
+    function handleDatePickerChange(val) {
+      if (val) selectDate(val);
+    }
+
+    function jumpToToday() {
+      selectDate(getTodayDateString(0));
+      showToast('已回到今天', '📅');
+    }
+
+    // Composer Controls
+    function setComposerMode(mode) {
+      appState.composerMode = mode;
+      const todoBtn = document.getElementById('composerModeTodoBtn');
+      const thoughtBtn = document.getElementById('composerModeThoughtBtn');
+      const todoOpts = document.getElementById('todoComposerOptions');
+      const thoughtOpts = document.getElementById('thoughtComposerOptions');
+      const input = document.getElementById('quickCaptureInput');
+
+      if (mode === 'todo') {
+        todoBtn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-white dark:bg-slate-700 text-blue-600 dark:text-white shadow-sm';
+        thoughtBtn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900';
+        todoOpts.classList.remove('hidden');
+        todoOpts.classList.add('flex');
+        thoughtOpts.classList.add('hidden');
+        thoughtOpts.classList.remove('flex');
+        input.placeholder = PERIOD_META[appState.composerPeriod].placeholder;
+      } else {
+        thoughtBtn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-sm';
+        todoBtn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900';
+        todoOpts.classList.add('hidden');
+        todoOpts.classList.remove('flex');
+        thoughtOpts.classList.remove('hidden');
+        thoughtOpts.classList.add('flex');
+        input.placeholder = '想到什么就记下来... 灵感、感悟、或留给今晚 23:00 的自己';
+      }
+      renderComposerPills();
+    }
+
+    function selectComposerPeriod(period) {
+      appState.composerPeriod = period;
+      const input = document.getElementById('quickCaptureInput');
+      if (input && appState.composerMode === 'todo') {
+        input.placeholder = PERIOD_META[period].placeholder;
+      }
+      renderComposerPills();
+    }
+
+    function toggleComposerDoneState() {
+      appState.composerIsDoneLog = !appState.composerIsDoneLog;
+      renderComposerPills();
+    }
+
+    function selectThoughtCategory(cat) {
+      appState.composerThoughtCat = cat;
+      renderComposerPills();
+    }
+
+    function clearTodoRemindTime() {
+      const el = document.getElementById('todoRemindTimeInput');
+      if (el) el.value = '';
+    }
+
+    function renderComposerPills() {
+      document.querySelectorAll('.composer-period-pill').forEach(btn => {
+        const p = btn.getAttribute('data-period-btn');
+        if (p === appState.composerPeriod) {
+          btn.className = 'composer-period-pill px-3 py-1.5 rounded-xl text-xs font-semibold border border-blue-500 bg-blue-500/10 text-blue-600 dark:text-blue-300 tap-scale';
+        } else {
+          btn.className = 'composer-period-pill px-3 py-1.5 rounded-xl text-xs font-medium border border-slate-200/80 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 tap-scale';
+        }
+      });
+
+      const doneBtn = document.getElementById('composerDoneStateBtn');
+      if (doneBtn) {
+        if (appState.composerIsDoneLog) {
+          doneBtn.textContent = '✅ 已做记录';
+          doneBtn.className = 'px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 tap-scale';
+        } else {
+          doneBtn.textContent = '⏳ 设为待办';
+          doneBtn.className = 'px-2.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-transparent hover:border-slate-300 tap-scale';
+        }
+      }
+
+      document.querySelectorAll('.thought-cat-pill').forEach(btn => {
+        const c = btn.getAttribute('data-thought-cat');
+        if (c === appState.composerThoughtCat) {
+          btn.className = 'thought-cat-pill px-3 py-1 rounded-xl text-xs font-semibold border border-indigo-500 bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 tap-scale';
+        } else {
+          btn.className = 'thought-cat-pill px-3 py-1 rounded-xl text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 tap-scale';
+        }
+      });
+    }
+
+    function handleComposerKeydown(e) {
+      if ((e.metaKey || e.ctrlKey || !e.shiftKey) && e.key === 'Enter') {
+        e.preventDefault();
+        submitComposerItem();
+      }
+    }
+
+    function submitComposerItem() {
+      const input = document.getElementById('quickCaptureInput');
+      const text = (input.value || '').trim();
+      if (!text) {
+        showToast('先写下一点内容吧', '✍️');
+        input.focus();
+        return;
+      }
+
+      if (appState.composerMode === 'todo') {
+        const remindInput = document.getElementById('todoRemindTimeInput');
+        const remindTime = remindInput ? remindInput.value : '';
+        const newTodo = {
+          id: 'todo_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+          date: appState.selectedDate,
+          period: appState.composerPeriod,
+          text,
+          completed: appState.composerIsDoneLog,
+          isLog: appState.composerIsDoneLog,
+          remindTime: remindTime || '',
+          notified: false,
+          createdAt: Date.now()
+        };
+        appState.todos.unshift(newTodo);
+        input.value = '';
+        if (remindInput) remindInput.value = '';
+        saveToLocal(true);
+        renderAll();
+        playGentleChime('todo');
+        showToast(`已记入「${PERIOD_META[appState.composerPeriod].short}」${remindTime ? ' · 提醒 ' + remindTime : ''}`, PERIOD_META[appState.composerPeriod].icon);
+      } else {
+        const now = new Date();
+        const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        const newThought = {
+          id: 'th_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+          category: appState.composerThoughtCat,
+          text,
+          pinned: false,
+          createdAt: Date.now(),
+          dateStr: getTodayDateString(0),
+          timeStr
+        };
+        appState.thoughts.unshift(newThought);
+        input.value = '';
+        saveToLocal(true);
+        if (appState.activeTab !== 'thoughts') {
+          switchMainTab('thoughts');
+        } else {
+          renderAll();
+        }
+        playGentleChime('todo');
+        showToast('已收入随想录', '🍃');
+      }
+    }
+
+    // Timeline Period Rendering (Morning / Noon / Evening / Today's Wishes)
+    function setTimelineFilter(filter) {
+      appState.timelineFilter = filter;
+      renderTimeline();
+    }
+
+    function renderTimeline() {
+      // Update filter buttons
+      document.querySelectorAll('.timeline-filter-btn').forEach(btn => {
+        const f = btn.getAttribute('data-filter-pill');
+        if (f === appState.timelineFilter) {
+          btn.className = 'timeline-filter-btn px-3.5 py-1.5 rounded-2xl text-xs font-semibold transition-all bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm tap-scale';
+        } else {
+          btn.className = 'timeline-filter-btn px-3 py-1.5 rounded-2xl text-xs font-medium transition-all bg-white dark:bg-flyme-darkCard text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-slate-800 tap-scale';
+        }
+      });
+
+      const dayTodos = appState.todos.filter(t => t.date === appState.selectedDate);
+      const completedCount = dayTodos.filter(t => t.completed).length;
+      const totalCount = dayTodos.length;
+      const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+      const bar = document.getElementById('dailyProgressBar');
+      const txt = document.getElementById('dailyProgressText');
+      if (bar) bar.style.width = `${pct}%`;
+      if (txt) txt.textContent = `${completedCount}/${totalCount}`;
+
+      const badgeTodos = document.getElementById('navBadgeTodos');
+      if (badgeTodos) badgeTodos.textContent = totalCount;
+
+      const container = document.getElementById('periodsGridContainer');
+      if (!container) return;
+
+      const periodsOrder = ['morning', 'noon', 'evening', 'wish'];
+      const visiblePeriods = appState.timelineFilter === 'all'
+        ? periodsOrder
+        : periodsOrder.filter(p => p === appState.timelineFilter);
+
+      let html = '';
+      visiblePeriods.forEach(periodKey => {
+        const meta = PERIOD_META[periodKey];
+        const items = dayTodos.filter(t => t.period === periodKey);
+        const doneCount = items.filter(t => t.completed).length;
+
+        html += `
+          <div class="bg-white/95 dark:bg-flyme-darkCard/95 rounded-3xl p-4 sm:p-5 shadow-flyme border border-slate-200/70 dark:border-slate-800/90 flex flex-col justify-between spring-transition">
+            <div>
+              <!-- Card Header -->
+              <div class="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-slate-100 dark:border-slate-800/80">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-9 h-9 rounded-2xl bg-gradient-to-br ${meta.accent} border flex items-center justify-center text-base">${meta.icon}</span>
+                  <div>
+                    <h3 class="font-semibold text-sm text-slate-900 dark:text-white">${meta.title}</h3>
+                    <span class="text-[11px] text-slate-400 dark:text-slate-500">${meta.timeRange}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[11px] font-medium px-2.5 py-0.5 rounded-full ${meta.badge}">${doneCount}/${items.length}</span>
+                  <button onclick="focusComposerForPeriod('${periodKey}')" title="在此段添加记录" class="w-7 h-7 rounded-xl bg-slate-100 hover:bg-blue-500 hover:text-white dark:bg-slate-800 dark:hover:bg-blue-600 text-slate-600 dark:text-slate-300 flex items-center justify-center text-sm font-bold transition-colors tap-scale">+</button>
+                </div>
+              </div>
+
+              <!-- Items List -->
+              <div class="space-y-2 min-h-[84px]">
+                ${items.length === 0 ? `
+                  <div onclick="focusComposerForPeriod('${periodKey}')" class="cursor-pointer rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-4 text-center hover:border-blue-400/60 transition-colors">
+                    <p class="text-xs text-slate-400 dark:text-slate-500">${meta.placeholder}</p>
+                    <span class="inline-block mt-1 text-[11px] text-blue-500 font-medium">点击轻触记录 +</span>
+                  </div>
+                ` : items.map(item => renderTodoItemRow(item)).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function renderTodoItemRow(item) {
+      const safeText = escapeHtml(item.text);
+      return `
+        <div class="todo-item-row ${item.completed ? 'completed' : ''} group flex items-start justify-between gap-2.5 p-3 rounded-2xl bg-slate-50/90 hover:bg-slate-100/80 dark:bg-slate-900/55 dark:hover:bg-slate-800/70 border border-slate-200/50 dark:border-slate-800/80 transition-all">
+          <div class="flex items-start gap-2.5 flex-1 min-w-0 cursor-pointer" onclick="toggleTodoCompleted('${item.id}')">
+            <button type="button" aria-label="切换完成状态" class="todo-check-circle mt-0.5 w-5 h-5 rounded-full flex items-center justify-center border ${
+              item.completed
+                ? 'bg-emerald-500 border-emerald-500 text-white shadow-sm shadow-emerald-500/30'
+                : 'border-slate-300 dark:border-slate-600 hover:border-blue-500 bg-white dark:bg-slate-800'
+            }">
+              ${item.completed ? '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>' : ''}
+            </button>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs sm:text-sm leading-relaxed break-words ${
+                item.completed ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-800 dark:text-slate-100 font-medium'
+              }">${safeText}</p>
+              <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                <span class="text-[10px] px-1.5 py-0.2 rounded-md ${
+                  item.completed
+                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                    : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                }">${item.completed ? '✓ 已完成/已记' : '⏳ 待办中'}</span>
+                ${item.remindTime ? `
+                  <span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.2 rounded-md ${
+                    item.notified
+                      ? 'bg-slate-200/70 dark:bg-slate-800 text-slate-500'
+                      : 'bg-amber-500/15 text-amber-600 dark:text-amber-300 font-mono'
+                  }">
+                    🔔 ${escapeHtml(item.remindTime)}
+                  </span>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1 opacity-80 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onclick="promoteTodoToThought('${item.id}')" title="转为随想感悟" class="p-1.5 rounded-lg hover:bg-indigo-500/15 text-slate-400 hover:text-indigo-500 text-xs">🍃</button>
+            <button onclick="deleteTodoItem('${item.id}')" title="删除" class="p-1.5 rounded-lg hover:bg-rose-500/15 text-slate-400 hover:text-rose-500 text-xs">✕</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function focusComposerForPeriod(periodKey) {
+      setComposerMode('todo');
+      selectComposerPeriod(periodKey);
+      const input = document.getElementById('quickCaptureInput');
+      if (input) {
+        input.focus();
+        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    function toggleTodoCompleted(id) {
+      const target = appState.todos.find(t => t.id === id);
+      if (!target) return;
+      target.completed = !target.completed;
+      saveToLocal(true);
+      renderAll();
+      if (target.completed) {
+        playGentleChime('todo');
+        showToast('已完成一项时光记录', '🎉');
+      }
+    }
+
+    function deleteTodoItem(id) {
+      appState.todos = appState.todos.filter(t => t.id !== id);
+      saveToLocal(true);
+      renderAll();
+      showToast('已移除该条记录', '🗑️');
+    }
+
+    function promoteTodoToThought(id) {
+      const item = appState.todos.find(t => t.id === id);
+      if (!item) return;
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      appState.thoughts.unshift({
+        id: 'th_' + Date.now(),
+        category: '感悟',
+        text: `【源自${PERIOD_META[item.period]?.short || '今日'}记录】${item.text}`,
+        pinned: false,
+        createdAt: Date.now(),
+        dateStr: item.date,
+        timeStr
+      });
+      saveToLocal(true);
+      renderAll();
+      showToast('已同步衍生至随想录', '🍃');
+    }
+
+    function quickAddDemoPreset() {
+      const samples = [
+        { period: 'morning', text: '晨起喝温水，快速浏览今日三件最重要的事', completed: true, remindTime: '08:00' },
+        { period: 'noon', text: '享用午餐，记录午间突然冒出的产品点子', completed: true, remindTime: '12:30' },
+        { period: 'evening', text: '晚饭后散步听播客，23:00 准时记录随想', completed: false, remindTime: '21:00' },
+        { period: 'wish', text: '整理手机相册，保持极简清爽的数字空间', completed: false, remindTime: '20:00' }
+      ];
+      samples.forEach((s, idx) => {
+        appState.todos.unshift({
+          id: 'demo_' + Date.now() + '_' + idx,
+          date: appState.selectedDate,
+          period: s.period,
+          text: s.text,
+          completed: s.completed,
+          isLog: s.completed,
+          remindTime: s.remindTime,
+          notified: false,
+          createdAt: Date.now() + idx
+        });
+      });
+      saveToLocal(true);
+      renderAll();
+      showToast('已填入三时与待办灵感示例', '✨');
+    }
+
+    // Thoughts (随想录) Rendering & Actions
+    function setThoughtFilter(cat) {
+      appState.thoughtFilter = cat;
+      renderThoughtsStream();
+    }
+
+    function renderThoughtsStream() {
+      document.querySelectorAll('.thought-filter-btn').forEach(btn => {
+        const f = btn.getAttribute('data-tfilter');
+        if (f === appState.thoughtFilter) {
+          btn.className = 'thought-filter-btn px-3.5 py-1.5 rounded-2xl text-xs font-semibold bg-indigo-600 text-white shadow-sm tap-scale';
+        } else {
+          btn.className = 'thought-filter-btn px-3 py-1.5 rounded-2xl text-xs font-medium bg-white dark:bg-flyme-darkCard text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-slate-800 tap-scale';
+        }
+      });
+
+      const badgeThoughts = document.getElementById('navBadgeThoughts');
+      if (badgeThoughts) badgeThoughts.textContent = appState.thoughts.length;
+
+      const query = (document.getElementById('thoughtSearchInput')?.value || '').trim().toLowerCase();
+      const filtered = appState.thoughts
+        .filter(item => appState.thoughtFilter === 'all' || item.category === appState.thoughtFilter)
+        .filter(item => !query || item.text.toLowerCase().includes(query) || item.category.toLowerCase().includes(query))
+        .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.createdAt - a.createdAt);
+
+      const container = document.getElementById('thoughtsListContainer');
+      if (!container) return;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full bg-white/80 dark:bg-flyme-darkCard/80 rounded-3xl p-8 text-center border border-dashed border-slate-200 dark:border-slate-800">
+            <p class="text-sm text-slate-500 dark:text-slate-400">还没有匹配的随想记录，想到什么随时在上方落笔。</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(item => `
+        <article class="bg-white dark:bg-flyme-darkCard rounded-3xl p-4 sm:p-5 shadow-flyme border ${
+          item.pinned ? 'border-indigo-400/60 dark:border-indigo-500/50' : 'border-slate-200/70 dark:border-slate-800'
+        } flex flex-col justify-between gap-3 spring-transition">
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5">
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-300">
+                  ${escapeHtml(item.category)}
+                </span>
+                ${item.pinned ? '<span class="text-[11px] text-amber-500 font-medium">📌 置顶</span>' : ''}
+              </div>
+              <span class="text-[11px] font-mono text-slate-400 dark:text-slate-500">${escapeHtml(item.dateStr || '')} ${escapeHtml(item.timeStr || '')}</span>
+            </div>
+            <p class="text-sm leading-relaxed text-slate-800 dark:text-slate-100 whitespace-pre-wrap break-words">${escapeHtml(item.text)}</p>
+          </div>
+
+          <div class="flex items-center justify-between pt-2.5 border-t border-slate-100 dark:border-slate-800/80 text-xs text-slate-400">
+            <button onclick="convertThoughtToTodo('${item.id}')" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium flex items-center gap-1 tap-scale">
+              <span>🎯 转为今日想做</span>
+            </button>
+            <div class="flex items-center gap-2">
+              <button onclick="togglePinThought('${item.id}')" class="hover:text-amber-500 tap-scale">${item.pinned ? '取消置顶' : '置顶'}</button>
+              <button onclick="deleteThoughtItem('${item.id}')" class="hover:text-rose-500 tap-scale">删除</button>
+            </div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function togglePinThought(id) {
+      const item = appState.thoughts.find(t => t.id === id);
+      if (!item) return;
+      item.pinned = !item.pinned;
+      saveToLocal(true);
+      renderThoughtsStream();
+      showToast(item.pinned ? '已置顶该随想' : '已取消置顶', '📌');
+    }
+
+    function deleteThoughtItem(id) {
+      appState.thoughts = appState.thoughts.filter(t => t.id !== id);
+      saveToLocal(true);
+      renderAll();
+      showToast('已删除随想', '🗑️');
+    }
+
+    function convertThoughtToTodo(id) {
+      const item = appState.thoughts.find(t => t.id === id);
+      if (!item) return;
+      appState.todos.unshift({
+        id: 'todo_' + Date.now(),
+        date: appState.selectedDate,
+        period: 'wish',
+        text: item.text,
+        completed: false,
+        isLog: false,
+        remindTime: '',
+        notified: false,
+        createdAt: Date.now()
+      });
+      saveToLocal(true);
+      switchMainTab('timeline');
+      showToast('已转化为「今日想做的事」', '🎯');
+    }
+
+    // Navigation Tabs
+    function switchMainTab(tab) {
+      appState.activeTab = tab;
+      const timelineSec = document.getElementById('viewTimelineSection');
+      const thoughtsSec = document.getElementById('viewThoughtsSection');
+      const navTimeline = document.getElementById('navTabTimeline');
+      const navThoughts = document.getElementById('navTabThoughts');
+
+      if (tab === 'timeline') {
+        timelineSec.classList.remove('hidden');
+        thoughtsSec.classList.add('hidden');
+        navTimeline.className = 'flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-full text-xs font-semibold spring-transition tap-scale bg-blue-600 text-white shadow-sm';
+        navThoughts.className = 'flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-full text-xs font-semibold spring-transition tap-scale text-slate-600 dark:text-slate-300 hover:text-slate-900';
+        setComposerMode('todo');
+      } else {
+        timelineSec.classList.add('hidden');
+        thoughtsSec.classList.remove('hidden');
+        navThoughts.className = 'flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-full text-xs font-semibold spring-transition tap-scale bg-indigo-600 text-white shadow-sm';
+        navTimeline.className = 'flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-full text-xs font-semibold spring-transition tap-scale text-slate-600 dark:text-slate-300 hover:text-slate-900';
+        setComposerMode('thought');
+      }
+      renderAll();
+    }
+
+    /********************************************************************
+     * NOTIFICATION ENGINE (To-Do Custom Time + 23:00 Daily Thought)
+     ********************************************************************/
+    function toggleNotificationCenterModal() {
+      const m = document.getElementById('notificationModal');
+      if (!m) return;
+      if (m.classList.contains('hidden')) {
+        syncNotificationModalUI();
+        m.classList.remove('hidden');
+        m.classList.add('flex');
+      } else {
+        closeNotificationCenterModal();
+      }
+    }
+
+    function closeNotificationCenterModal() {
+      const m = document.getElementById('notificationModal');
+      if (m) {
+        m.classList.add('hidden');
+        m.classList.remove('flex');
+      }
+    }
+
+    function syncNotificationModalUI() {
+      const n = appState.notifications;
+      const nightlyToggle = document.getElementById('toggleNightlyThoughtNotif');
+      const nightlyPicker = document.getElementById('nightlyRemindTimePicker');
+      const todoToggle = document.getElementById('toggleTodoNotif');
+      const soundToggle = document.getElementById('toggleSoundChime');
+
+      if (nightlyToggle) nightlyToggle.checked = n.nightlyEnabled !== false;
+      if (nightlyPicker) nightlyPicker.value = n.nightlyTime || '23:00';
+      if (todoToggle) todoToggle.checked = n.todoNotifEnabled !== false;
+      if (soundToggle) soundToggle.checked = n.soundEnabled !== false;
+
+      const permDesc = document.getElementById('notifPermissionDesc');
+      const permBtn = document.getElementById('requestPermBtn');
+      if ('Notification' in window) {
+        if (Notification.permission === 'granted') {
+          if (permDesc) permDesc.textContent = '✅ 系统级通知权限已激活（魅族状态栏与桌面可接收通知）';
+          if (permBtn) {
+            permBtn.textContent = '已授权';
+            permBtn.className = 'px-3 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 text-xs font-semibold whitespace-nowrap';
+          }
+        } else if (Notification.permission === 'denied') {
+          if (permDesc) permDesc.textContent = '当前浏览器已拦截系统通知，仍可使用应用内实况胶囊提醒';
+        }
+      }
+    }
+
+    function updateNotificationSettings() {
+      const n = appState.notifications;
+      n.nightlyEnabled = document.getElementById('toggleNightlyThoughtNotif')?.checked ?? true;
+      n.nightlyTime = document.getElementById('nightlyRemindTimePicker')?.value || '23:00';
+      n.todoNotifEnabled = document.getElementById('toggleTodoNotif')?.checked ?? true;
+      n.soundEnabled = document.getElementById('toggleSoundChime')?.checked ?? true;
+      saveToLocal(false);
+      updateLiveCapsuleCountdown();
+      showToast(`提醒设置已更新 · 随想录每日 ${n.nightlyTime}`, '🔔');
+    }
+
+    async function requestSystemNotificationPermission() {
+      if (!('Notification' in window)) {
+        showToast('当前环境使用内置 Flyme 实况胶囊通知', '💡');
+        return;
+      }
+      try {
+        const perm = await Notification.requestPermission();
+        syncNotificationModalUI();
+        if (perm === 'granted') {
+          dispatchBrowserNotification('浮光记 · 通知已开启', '待办事项与每晚 23:00 随想提醒将准时送达。');
+          showToast('系统级通知已成功开启', '✅');
+        } else {
+          showToast('已启用应用内 Flyme 灵动胶囊通知', '🔔');
+        }
+      } catch (e) {
+        showToast('已启用应用内 Flyme 灵动胶囊通知', '🔔');
+      }
+    }
+
+    function dispatchBrowserNotification(title, body) {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        try {
+          new Notification(title, {
+            body,
+            silent: false
+          });
+        } catch (e) {
+          // Fallback handled by in-app capsule
+        }
+      }
+    }
+
+    function sendTestTodoNotification() {
+      playGentleChime('todo');
+      dispatchBrowserNotification('⏰ 待办提醒 · 浮光记', '这是一条测试待办通知：记得保持劳逸结合！');
+      showToast('⏰ 待办通知已触发：记得保持劳逸结合！', '🔔');
+    }
+
+    function triggerNightlyReflectionModal() {
+      closeNotificationCenterModal();
+      playGentleChime('nightly');
+      dispatchBrowserNotification('🌙 23:00 随想录提醒 · 浮光记', '夜深了，今天有什么想记下来的随想或感悟吗？');
+
+      const todayCount = appState.todos.filter(t => t.date === getTodayDateString(0)).length;
+      const line = document.getElementById('nightlySummaryLine');
+      if (line) {
+        line.textContent = `今天你记录了 ${todayCount} 项三时轨迹，在 23:00 的静谧时刻，写下脑海里的闪念吧。`;
+      }
+
+      const m = document.getElementById('nightlyReflectionModal');
+      if (m) {
+        m.classList.remove('hidden');
+        m.classList.add('flex');
+      }
+    }
+
+    function closeNightlyReflectionModal() {
+      const m = document.getElementById('nightlyReflectionModal');
+      if (m) {
+        m.classList.add('hidden');
+        m.classList.remove('flex');
+      }
+    }
+
+    function saveNightlyReflectionThought() {
+      const input = document.getElementById('nightlyQuickThoughtInput');
+      const text = (input?.value || '').trim();
+      if (!text) {
+        showToast('写下一两句此刻的想法吧', '🌙');
+        return;
+      }
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      appState.thoughts.unshift({
+        id: 'th_night_' + Date.now(),
+        category: '晚安小结',
+        text,
+        pinned: false,
+        createdAt: Date.now(),
+        dateStr: getTodayDateString(0),
+        timeStr
+      });
+      if (input) input.value = '';
+      closeNightlyReflectionModal();
+      saveToLocal(true);
+      switchMainTab('thoughts');
+      showToast('今夜 23:00 随想已珍藏，晚安', '🌙');
+    }
+
+    // Background Scheduler ticking every 10 seconds for To-Do reminders & 23:00 Thought Notification
+    function updateLiveCapsuleCountdown() {
+      const now = new Date();
+      const currentHM = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      const targetTime = appState.notifications?.nightlyTime || '23:00';
+      const [tH, tM] = targetTime.split(':').map(Number);
+
+      let targetDate = new Date(now);
+      targetDate.setHours(tH || 23, tM || 0, 0, 0);
+      if (targetDate <= now) {
+        targetDate.setDate(targetDate.getDate() + 1);
+      }
+      const diffMs = targetDate - now;
+      const diffHrs = Math.floor(diffMs / 3600000);
+      const diffMins = Math.floor((diffMs % 3600000) / 60000);
+
+      const subBadge = document.getElementById('capsuleSubBadge');
+      const capsuleText = document.getElementById('capsuleText');
+      const modalCountdown = document.getElementById('countdownToNightlyText');
+
+      const countdownStr = `${diffHrs}h ${diffMins}m`;
+      if (subBadge) subBadge.textContent = targetTime;
+      if (modalCountdown) modalCountdown.textContent = `距离下次 ${targetTime} 随想推送还有 ${diffHrs} 小时 ${diffMins} 分钟`;
+
+      const pendingWithRemind = appState.todos.filter(
+        t => t.date === getTodayDateString(0) && !t.completed && t.remindTime && !t.notified
+      );
+      if (capsuleText) {
+        if (pendingWithRemind.length > 0) {
+          capsuleText.textContent = `${pendingWithRemind.length} 项待办提醒 · 晚 ${targetTime} 随想`;
+        } else {
+          capsuleText.textContent = `晚 ${targetTime} 随想 (${countdownStr})`;
+        }
+      }
+
+      // Check if any To-Do reminder matches current HH:MM
+      if (appState.notifications?.todoNotifEnabled !== false) {
+        let changed = false;
+        appState.todos.forEach(todo => {
+          if (
+            todo.date === getTodayDateString(0) &&
+            !todo.completed &&
+            !todo.notified &&
+            todo.remindTime === currentHM
+          ) {
+            todo.notified = true;
+            changed = true;
+            playGentleChime('todo');
+            dispatchBrowserNotification('⏰ 待办时间到 · 浮光记', todo.text);
+            showToast(`⏰ 待办提醒：${todo.text}`, '🔔');
+          }
+        });
+        if (changed) {
+          saveToLocal(false);
+          renderTimeline();
+        }
+      }
+
+      // Check if 23:00 Nightly Thought Notification should fire
+      const todayDate = getTodayDateString(0);
+      if (
+        appState.notifications?.nightlyEnabled !== false &&
+        currentHM === targetTime &&
+        appState.notifications.lastNightlyFiredDate !== todayDate
+      ) {
+        appState.notifications.lastNightlyFiredDate = todayDate;
+        saveToLocal(false);
+        triggerNightlyReflectionModal();
+      }
+    }
+
+    /********************************************************************
+     * SUPABASE CLOUD SYNC (Meizu Android Phone + PC Bidirectional Sync)
+     ********************************************************************/
+    function openSyncModal() {
+      const m = document.getElementById('supabaseSyncModal');
+      if (!m) return;
+      document.getElementById('supabaseUrlInput').value = supabaseConfig.url || '';
+      document.getElementById('supabaseKeyInput').value = supabaseConfig.anonKey || '';
+      document.getElementById('supabaseRoomInput').value = supabaseConfig.roomId || 'meizu-flownote-main';
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    }
+
+    function closeSyncModal() {
+      const m = document.getElementById('supabaseSyncModal');
+      if (m) {
+        m.classList.add('hidden');
+        m.classList.remove('flex');
+      }
+    }
+
+    function updateSyncStatusIndicator(status, label) {
+      const dot = document.getElementById('syncIndicatorDot');
+      const shortTxt = document.getElementById('syncStatusShort');
+      const feedback = document.getElementById('syncConnectionFeedback');
+
+      if (dot) {
+        if (status === 'connected') dot.className = 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse';
+        else if (status === 'syncing') dot.className = 'w-2 h-2 rounded-full bg-blue-500 animate-ping';
+        else if (status === 'error') dot.className = 'w-2 h-2 rounded-full bg-rose-500';
+        else dot.className = 'w-2 h-2 rounded-full bg-amber-400';
+      }
+      if (shortTxt) shortTxt.textContent = label;
+      if (feedback) feedback.textContent = `状态：${label}`;
+    }
+
+    function initSupabaseClientIfConfigured() {
+      if (!supabaseConfig.url || !supabaseConfig.anonKey) {
+        updateSyncStatusIndicator('local', '本地存储');
+        return false;
+      }
+      try {
+        if (window.supabase && window.supabase.createClient) {
+          supabaseClient = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+          subscribeSupabaseRealtime();
+          updateSyncStatusIndicator('connected', 'Supabase 已连');
+          return true;
+        }
+      } catch (e) {
+        console.warn('Supabase init error:', e);
+      }
+      return false;
+    }
+
+    function subscribeSupabaseRealtime() {
+      if (!supabaseClient || !supabaseConfig.roomId) return;
+      try {
+        if (realtimeChannel) {
+          supabaseClient.removeChannel(realtimeChannel);
+        }
+        realtimeChannel = supabaseClient
+          .channel('flownote_room_' + supabaseConfig.roomId)
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'flownote_sync',
+              filter: `room_id=eq.${supabaseConfig.roomId}`
+            },
+            payload => {
+              if (payload.new && payload.new.payload) {
+                const remote = payload.new.payload;
+                if (remote.updatedAt && remote.updatedAt > appState.updatedAt) {
+                  mergeRemotePayload(remote);
+                  showToast('已实时同步来自另一台设备的更新', '☁️');
+                }
+              }
+            }
+          )
+          .subscribe();
+      } catch (e) {
+        console.warn('Realtime subscription fallback:', e);
+      }
+    }
+
+    function mergeRemotePayload(remote) {
+      if (Array.isArray(remote.todos)) appState.todos = remote.todos;
+      if (Array.isArray(remote.thoughts)) appState.thoughts = remote.thoughts;
+      if (remote.notifications) {
+        appState.notifications = Object.assign({}, appState.notifications, remote.notifications);
+      }
+      appState.updatedAt = remote.updatedAt || Date.now();
+      saveToLocal(false);
+      renderAll();
+    }
+
+    async function saveAndSyncSupabase() {
+      const url = (document.getElementById('supabaseUrlInput')?.value || '').trim().replace(/\/$/, '');
+      const anonKey = (document.getElementById('supabaseKeyInput')?.value || '').trim();
+      const roomId = (document.getElementById('supabaseRoomInput')?.value || 'meizu-flownote-main').trim();
+
+      supabaseConfig = { url, anonKey, roomId };
+      try {
+        localStorage.setItem(SUPABASE_CFG_KEY, JSON.stringify(supabaseConfig));
+      } catch (e) {}
+
+      if (!url || !anonKey) {
+        updateSyncStatusIndicator('local', '本地模式');
+        showToast('已保存本地配置（未填 URL/Key 则使用本地存储）', '💾');
+        return;
+      }
+
+      initSupabaseClientIfConfigured();
+      await pushToSupabaseSilent(true);
+    }
+
+    async function pushToSupabaseSilent(verbose = false) {
+      if (!supabaseConfig.url || !supabaseConfig.anonKey) return;
+      updateSyncStatusIndicator('syncing', '同步中...');
+      const syncPayload = {
+        todos: appState.todos,
+        thoughts: appState.thoughts,
+        notifications: appState.notifications,
+        updatedAt: appState.updatedAt
+      };
+
+      try {
+        const endpoint = `${supabaseConfig.url}/rest/v1/flownote_sync`;
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabaseConfig.anonKey,
+            'Authorization': `Bearer ${supabaseConfig.anonKey}`,
+            'Prefer': 'resolution=merge-duplicates'
+          },
+          body: JSON.stringify({
+            room_id: supabaseConfig.roomId,
+            payload: syncPayload,
+            updated_at: new Date().toISOString()
+          })
+        });
+
+        if (res.ok) {
+          updateSyncStatusIndicator('connected', '已云同步');
+          if (verbose) showToast('手机与电脑云端数据已同步！', '⚡');
+        } else {
+          const errText = await res.text();
+          updateSyncStatusIndicator('error', '需建表/检查Key');
+          if (verbose) showToast('请确认已在 Supabase 执行建表 SQL', '⚠️');
+          console.warn('Supabase REST response:', errText);
+        }
+      } catch (e) {
+        updateSyncStatusIndicator('error', '网络离线');
+        if (verbose) showToast('当前离线，修改已保存在本地', '📡');
+      }
+    }
+
+    async function pullFromSupabase() {
+      const url = (document.getElementById('supabaseUrlInput')?.value || supabaseConfig.url || '').trim().replace(/\/$/, '');
+      const anonKey = (document.getElementById('supabaseKeyInput')?.value || supabaseConfig.anonKey || '').trim();
+      const roomId = (document.getElementById('supabaseRoomInput')?.value || supabaseConfig.roomId || 'meizu-flownote-main').trim();
+
+      if (!url || !anonKey) {
+        showToast('请先填写 Supabase URL 与 Anon Key', '💡');
+        return;
+      }
+
+      supabaseConfig = { url, anonKey, roomId };
+      updateSyncStatusIndicator('syncing', '拉取中...');
+
+      try {
+        const endpoint = `${url}/rest/v1/flownote_sync?room_id=eq.${encodeURIComponent(roomId)}&select=payload,updated_at`;
+        const res = await fetch(endpoint, {
+          headers: {
+            'apikey': anonKey,
+            'Authorization': `Bearer ${anonKey}`
+          }
+        });
+        if (!res.ok) throw new Error('Pull failed');
+        const rows = await res.json();
+        if (rows && rows.length > 0 && rows[0].payload) {
+          mergeRemotePayload(rows[0].payload);
+          updateSyncStatusIndicator('connected', '已云同步');
+          showToast('已从 Supabase 拉取最新手机/电脑数据', '☁️');
+        } else {
+          showToast('云端暂无该空间数据，点击保存即可首次上传', '✨');
+          updateSyncStatusIndicator('connected', '已就绪');
+        }
+      } catch (e) {
+        updateSyncStatusIndicator('error', '拉取失败');
+        showToast('拉取失败，请检查 URL、Key 或是否已运行建表 SQL', '⚠️');
+      }
+    }
+
+    function copySupabaseSql() {
+      const sqlText = document.getElementById('supabaseSqlBlock')?.textContent || '';
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(sqlText).then(() => {
+          showToast('建表 SQL 已复制，粘贴至 Supabase SQL Editor 运行即可', '📋');
+        }).catch(() => fallbackCopyText(sqlText));
+      } else {
+        fallbackCopyText(sqlText);
+      }
+    }
+
+    function fallbackCopyText(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showToast('建表 SQL 已复制到剪贴板', '📋');
+      } catch (e) {}
+      document.body.removeChild(ta);
+    }
+
+    // Export & Import JSON backup
+    function exportDataJson() {
+      const dataStr = JSON.stringify({
+        todos: appState.todos,
+        thoughts: appState.thoughts,
+        notifications: appState.notifications,
+        exportedAt: new Date().toISOString()
+      }, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `flownote_backup_${getTodayDateString(0)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('已导出 JSON 数据包', '📦');
+    }
+
+    function importDataJson(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (Array.isArray(parsed.todos)) appState.todos = parsed.todos;
+          if (Array.isArray(parsed.thoughts)) appState.thoughts = parsed.thoughts;
+          saveToLocal(true);
+          renderAll();
+          closeSyncModal();
+          showToast('备份数据已成功恢复！', '🎉');
+        } catch (err) {
+          showToast('JSON 文件格式有误', '⚠️');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function renderAll() {
+      updateHeaderGreeting();
+      renderWeekStrip();
+      renderComposerPills();
+      renderTimeline();
+      renderThoughtsStream();
+      updateLiveCapsuleCountdown();
+    }
+
+    // Initialize Application
+    window.addEventListener('DOMContentLoaded', () => {
+      loadFromLocal();
+      applyTheme();
+      renderAll();
+      initSupabaseClientIfConfigured();
+
+      if (notificationTimerId) clearInterval(notificationTimerId);
+      notificationTimerId = setInterval(updateLiveCapsuleCountdown, 10000);
+    });
+  </script>
+</body>
+</html>
