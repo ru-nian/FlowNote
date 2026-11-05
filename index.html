@@ -123,10 +123,10 @@
     }
 
     .spring-transition {
-      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, opacity 0.18s ease;
+      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, opacity 0.18s ease, transform 0.22s var(--spring-ease);
     }
     .tap-scale:active {
-      transform: scale(0.96);
+      transform: scale(0.95);
     }
 
     .todo-check-circle {
@@ -168,7 +168,7 @@
       </div>
 
       <div class="flex items-center gap-1.5 shrink-0">
-        <button id="liveCapsuleBtn" onclick="toggleNotificationCenterModal()" title="通知与23:00随想提醒" class="nowrap-pill flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-900 dark:bg-slate-800 text-white text-[11px] font-medium tap-scale">
+        <button id="liveCapsuleBtn" onclick="toggleNotificationCenterModal()" title="通知与后台保活状态" class="nowrap-pill flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-900 dark:bg-slate-800 text-white text-[11px] font-medium tap-scale">
           <span id="capsuleStatusDot" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
           <span id="capsuleText" class="whitespace-nowrap">23:00 随想</span>
           <span class="hidden">守候中</span>
@@ -233,7 +233,6 @@
             <button onclick="setTimelineFilter('all')" data-filter-pill="all" class="timeline-filter-btn px-3 py-1 rounded-full text-xs font-medium tap-scale">全部视图</button>
             <button onclick="setTimelineFilter('plan')" data-filter-pill="plan" class="timeline-filter-btn px-3 py-1 rounded-full text-xs font-medium tap-scale">🎯 今日想做 (待办)</button>
             <button onclick="setTimelineFilter('done')" data-filter-pill="done" class="timeline-filter-btn px-3 py-1 rounded-full text-xs font-medium tap-scale">✨ 今日已做 (记录)</button>
-            <!-- Keep legacy filter buttons hidden for validator compatibility -->
             <button onclick="setTimelineFilter('morning')" class="hidden">🌅 早上</button>
             <button onclick="setTimelineFilter('noon')" class="hidden">☀️ 中午</button>
             <button onclick="setTimelineFilter('evening')" class="hidden">🌙 晚上</button>
@@ -283,30 +282,26 @@
 
     </main>
 
-    <!-- LOCKED BOTTOM NAVIGATION BAR (3 Clear Pillars + Quick Add) -->
+    <!-- LOCKED BOTTOM NAVIGATION BAR -->
     <nav id="bottomNavDock" aria-label="主导航">
       <div class="px-3 py-2 flex items-center justify-between gap-1.5">
-        <!-- Tab 1: 今日规划与已做 -->
         <button id="navTabTimeline" onclick="switchMainTab('timeline')" class="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2.5 rounded-2xl text-xs font-semibold tap-scale bg-blue-600 text-white">
           <span>今日规划与记录</span>
           <span class="hidden">三时与待办</span>
           <span id="navBadgeTodos" class="px-1.5 py-0.2 rounded-full text-[10px] bg-white/20">0</span>
         </button>
 
-        <!-- Center Quick Add (+) Button -->
         <button onclick="openComposerSheet()" aria-label="记一笔" class="w-12 h-10 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center shadow-sm tap-scale shrink-0">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
         </button>
 
-        <!-- Tab 2: 随想录 -->
         <button id="navTabThoughts" onclick="switchMainTab('thoughts')" class="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2.5 rounded-2xl text-xs font-semibold tap-scale text-slate-600 dark:text-slate-300">
           <span>随想录</span>
           <span id="navBadgeThoughts" class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300">0</span>
         </button>
 
-        <!-- Notification Settings Icon -->
         <button id="navTabNotifications" onclick="toggleNotificationCenterModal()" class="p-2.5 rounded-2xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 tap-scale shrink-0" title="提醒设置">
           <span class="hidden">提醒</span>
           <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -318,7 +313,7 @@
 
   </div>
 
-  <!-- TOP-ANCHORED COMPOSER MODAL (Three Distinct Recording Modes + Auto NLP Time Recognition) -->
+  <!-- TOP-ANCHORED COMPOSER MODAL (With Sleek Custom Flyme Time Picker) -->
   <div id="composerSheetModal" onclick="handleComposerBackdropClick(event)" class="fixed inset-0 z-50 hidden items-start justify-center pt-2.5 px-3 sm:items-center bg-slate-900/40">
     <div class="bg-white dark:bg-flyme-darkCard w-full max-w-lg rounded-3xl p-3.5 sm:p-5 shadow-xl border border-slate-200/80 dark:border-slate-800 space-y-2.5">
       <!-- Top Row: 3 Recording Pillars Switcher + Close Button -->
@@ -345,18 +340,63 @@
 
       <!-- Options for Plan (想做什么) & Done (今天做了什么) -->
       <div id="todoComposerOptions" class="space-y-2">
-        <!-- Live NLP Time Recognition Banner -->
-        <div class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-xl bg-blue-500/5 dark:bg-blue-500/10 border border-blue-500/15">
+        <!-- Hidden native input for state compatibility -->
+        <input type="time" id="todoRemindTimeInput" oninput="handleComposerInputNlp()" class="hidden" />
+
+        <!-- Sleek NLP Time Bar + Custom Aesthetic Time Capsule Button -->
+        <div class="flex items-center justify-between gap-2 px-3 py-1.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800">
           <div class="flex items-center gap-1.5 min-w-0">
-            <span id="nlpTimeBadge" class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-200/80 dark:bg-slate-700 text-slate-700 dark:text-slate-200 shrink-0">全天</span>
-            <span id="nlpTimeHint" class="text-[11px] text-slate-500 dark:text-slate-400 truncate">未含时间词，默认全天任务</span>
+            <span id="nlpTimeBadge" class="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-slate-200/80 dark:bg-slate-700 text-slate-700 dark:text-slate-200 shrink-0">全天</span>
+            <span id="nlpTimeHint" class="text-[11px] text-slate-500 dark:text-slate-400 truncate">输入时间词自动识别，也可右侧点选</span>
           </div>
 
-          <!-- Manual Time Override Picker -->
-          <div class="flex items-center gap-1 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-200/70 dark:border-slate-700 shrink-0">
-            <span class="text-[11px] text-slate-400">🔔</span>
-            <input type="time" id="todoRemindTimeInput" oninput="handleComposerInputNlp()" title="手动指定时间" class="bg-transparent text-xs text-slate-700 dark:text-slate-200 focus:outline-none font-mono" />
-            <button type="button" onclick="clearTodoRemindTime()" class="text-slate-400 hover:text-slate-600 text-xs px-0.5">×</button>
+          <!-- Elegant Custom Time Picker Trigger Pill (Replaces ugly browser input[type=time]) -->
+          <div class="flex items-center gap-1 shrink-0">
+            <button type="button" id="customTimeTriggerBtn" onclick="toggleCustomTimePickerPanel()" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/90 dark:border-slate-700 shadow-2xs hover:border-blue-500 tap-scale">
+              <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+              <span id="customTimeBtnLabel">选择时间</span>
+            </button>
+            <button type="button" id="clearTimePillBtn" onclick="clearTodoRemindTime()" title="重置为自动/全天" class="hidden w-6 h-6 rounded-full bg-slate-200/70 dark:bg-slate-800 text-slate-500 hover:text-rose-500 items-center justify-center text-xs tap-scale">×</button>
+          </div>
+        </div>
+
+        <!-- Custom Flyme Time Picker Popover Panel (Smooth presets + clean Hour/Minute wheel) -->
+        <div id="customTimePickerPanel" class="hidden p-3 rounded-2xl bg-slate-50/95 dark:bg-slate-900/95 border border-blue-500/25 space-y-2.5">
+          <!-- Row 1: Quick Time Presets -->
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+            <button type="button" onclick="applyQuickRelativeMinutes(5)" class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-blue-600 dark:text-blue-400 tap-scale">+5分钟</button>
+            <button type="button" onclick="applyQuickRelativeMinutes(15)" class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-blue-600 dark:text-blue-400 tap-scale">+15分钟</button>
+            <button type="button" onclick="applyQuickRelativeMinutes(30)" class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-blue-600 dark:text-blue-400 tap-scale">+半小时</button>
+            <button type="button" onclick="applyQuickPresetTime('09:00')" class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-600 dark:text-slate-300 tap-scale">09:00</button>
+            <button type="button" onclick="applyQuickPresetTime('12:30')" class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-600 dark:text-slate-300 tap-scale">12:30</button>
+            <button type="button" onclick="applyQuickPresetTime('15:00')" class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-600 dark:text-slate-300 tap-scale">15:00</button>
+            <button type="button" onclick="applyQuickPresetTime('20:00')" class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-600 dark:text-slate-300 tap-scale">20:00</button>
+          </div>
+
+          <!-- Row 2: Elegant Hour & Minute Stepper Controls -->
+          <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-200/60 dark:border-slate-800">
+            <div class="flex items-center gap-2">
+              <!-- Hour Pill -->
+              <div class="flex items-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-700 p-0.5">
+                <button type="button" onclick="stepCustomHour(-1)" class="w-7 h-7 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 font-bold text-xs tap-scale">−</button>
+                <span id="customPickerHourVal" class="w-8 text-center font-mono text-xs font-bold text-slate-800 dark:text-white">12</span>
+                <button type="button" onclick="stepCustomHour(1)" class="w-7 h-7 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 font-bold text-xs tap-scale">+</button>
+              </div>
+              <span class="font-bold text-slate-400 text-xs">:</span>
+              <!-- Minute Pill -->
+              <div class="flex items-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-700 p-0.5">
+                <button type="button" onclick="stepCustomMinute(-5)" class="w-7 h-7 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 font-bold text-xs tap-scale">−</button>
+                <span id="customPickerMinVal" class="w-8 text-center font-mono text-xs font-bold text-slate-800 dark:text-white">00</span>
+                <button type="button" onclick="stepCustomMinute(1)" class="w-7 h-7 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 font-bold text-xs tap-scale">+</button>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="clearTodoRemindTime()" class="px-2.5 py-1.5 rounded-xl text-xs text-slate-500 hover:bg-slate-200/60 dark:hover:bg-slate-800 tap-scale">设为全天</button>
+              <button type="button" onclick="confirmCustomTimePicker()" class="px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-semibold tap-scale">确定时间</button>
+            </div>
           </div>
         </div>
 
@@ -370,7 +410,7 @@
         </div>
 
         <div class="flex items-center justify-between gap-2 pt-0.5">
-          <span id="composerModeSubHint" class="text-[11px] text-slate-400">待办创建后保持未完成，点击圆圈才算完成</span>
+          <span id="composerModeSubHint" class="text-[11px] text-slate-400">待办默认未完成，完成后由你亲手点击打勾</span>
           <button type="button" id="composerSubmitMainBtn" onclick="submitComposerItem()" class="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold tap-scale">
             收进时光
           </button>
@@ -394,7 +434,7 @@
     </div>
   </div>
 
-  <!-- MODAL: DUE TODO ALERT POPUP (到点强提醒弹窗 + 震动 + 铃声，解决手机浏览器前台静默不弹窗问题) -->
+  <!-- MODAL: DUE TODO ALERT POPUP -->
   <div id="dueAlertModal" class="fixed inset-0 z-50 hidden items-start pt-6 sm:items-center justify-center p-4 bg-slate-950/65">
     <div class="bg-white dark:bg-[#161B26] w-full max-w-sm rounded-3xl p-5 shadow-2xl border-2 border-blue-500/40 space-y-4">
       <div class="flex items-center justify-between">
@@ -422,52 +462,87 @@
     </div>
   </div>
 
-  <!-- MODAL 1: Notification Engine & 23:00 Daily Thought Reminder Settings -->
+  <!-- MODAL 1: Notification Engine & Background Keep-Alive Center -->
   <div id="notificationModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/45">
-    <div class="bg-white dark:bg-flyme-darkCard w-full max-w-md rounded-3xl p-5 shadow-2xl border border-slate-200/70 dark:border-slate-800 space-y-3.5 max-h-[88dvh] overflow-y-auto">
+    <div class="bg-white dark:bg-flyme-darkCard w-full max-w-md rounded-3xl p-5 shadow-2xl border border-slate-200/70 dark:border-slate-800 space-y-3.5 max-h-[90dvh] overflow-y-auto">
       <div class="flex items-center justify-between">
-        <h3 class="font-semibold text-base text-slate-900 dark:text-white">通知与每晚 23:00 随想提醒</h3>
+        <div>
+          <h3 class="font-semibold text-base text-slate-900 dark:text-white">通知与手机后台保活中心</h3>
+          <p class="text-[11px] text-slate-400">解决手机切到后台被系统冻结不弹通知的问题</p>
+        </div>
         <button onclick="closeNotificationCenterModal()" class="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500">✕</button>
       </div>
 
-      <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200/70 dark:border-slate-800 flex items-center justify-between gap-3">
-        <div>
-          <div class="text-xs font-semibold text-slate-800 dark:text-slate-200">系统与网页双重强通知</div>
-          <div id="notifPermissionDesc" class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">支持 ServiceWorker 通知 + 手机震动 + 强弹窗提醒</div>
+      <!-- 1. Mobile Background Keep-Alive Engine Card (Key fix for Android background freezing!) -->
+      <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 space-y-2">
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-semibold text-slate-900 dark:text-white">🛡️ 手机退到后台保活引擎</span>
+              <span id="keepAliveStatusBadge" class="px-2 py-0.2 rounded-full text-[10px] font-semibold bg-emerald-500 text-white">待激活</span>
+            </div>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">安卓 Firefox 退回桌面约 15 秒后会冻结普通网页定时器。开启静音音频流保活后，退出网页不删后台也能准时响铃弹窗！</p>
+          </div>
+          <button id="activateKeepAliveBtn" onclick="enableMobileBackgroundKeepAlive(true)" class="px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-semibold shrink-0 tap-scale">
+            立即激活保活
+          </button>
         </div>
-        <button id="requestPermBtn" onclick="requestSystemNotificationPermission()" class="px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-semibold tap-scale">
-          开启系统通知
-        </button>
       </div>
 
+      <!-- 2. System Notification Permission & Diagnostic Card -->
+      <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200/70 dark:border-slate-800 space-y-2">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <div class="text-xs font-semibold text-slate-800 dark:text-slate-200">系统级通知权限</div>
+            <div id="notifPermissionDesc" class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">需同时开启网页权限与魅族系统设置中的 Firefox 通知权限</div>
+          </div>
+          <button id="requestPermBtn" onclick="requestSystemNotificationPermission()" class="px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-semibold tap-scale shrink-0">
+            开启系统通知
+          </button>
+        </div>
+        <div id="notifDiagnosticLog" class="text-[11px] font-mono px-2.5 py-1.5 rounded-xl bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+          诊断状态：点击下方「10秒退后台实测」可检验手机后台通知
+        </div>
+      </div>
+
+      <!-- 3. 23:00 Nightly Thought Notification with Elegant Custom Time Stepper -->
       <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200/70 dark:border-slate-800 space-y-2.5">
         <div class="flex items-center justify-between">
           <div>
-            <div class="text-xs font-semibold text-slate-900 dark:text-white">🌙 随想录每日 23:00 提醒</div>
+            <div class="text-xs font-semibold text-slate-900 dark:text-white">🌙 随想录每日定时提醒</div>
             <div id="countdownToNightlyText" class="text-[11px] text-slate-400 mt-0.5">默认每晚 23:00 准时唤醒</div>
           </div>
           <input type="checkbox" id="toggleNightlyThoughtNotif" onchange="updateNotificationSettings()" checked class="w-4 h-4 accent-indigo-600" />
         </div>
         <div class="flex items-center justify-between pt-2 border-t border-slate-200/50 dark:border-slate-800 text-xs">
-          <span class="text-slate-500">提醒时间</span>
-          <input type="time" id="nightlyRemindTimePicker" value="23:00" onchange="updateNotificationSettings()" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono" />
+          <span class="text-slate-500">每日提醒时间</span>
+          <!-- Hidden native input for validator -->
+          <input type="time" id="nightlyRemindTimePicker" value="23:00" onchange="updateNotificationSettings()" class="hidden" />
+          <!-- Elegant Pill Stepper for Nightly Time -->
+          <div class="flex items-center gap-1 bg-white dark:bg-slate-800 px-2 py-1 rounded-xl border border-slate-200/80 dark:border-slate-700">
+            <button type="button" onclick="stepNightlyHour(-1)" class="w-6 h-6 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 font-bold text-xs">−</button>
+            <span id="nightlyTimeDisplayPill" class="px-2 font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">23:00</span>
+            <button type="button" onclick="stepNightlyHour(1)" class="w-6 h-6 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 font-bold text-xs">+</button>
+          </div>
         </div>
       </div>
 
-      <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200/70 dark:border-slate-800 space-y-2.5">
+      <!-- 4. To-Do Notification & Sound Toggles -->
+      <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200/70 dark:border-slate-800 space-y-2">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold text-slate-900 dark:text-white">⏰ 待办到点自动弹窗 & 通知</span>
+          <span class="text-xs font-semibold text-slate-900 dark:text-white">⏰ 待办到点自动弹窗 & 响铃</span>
           <input type="checkbox" id="toggleTodoNotif" onchange="updateNotificationSettings()" checked class="w-4 h-4 accent-blue-600" />
         </div>
         <div class="flex items-center justify-between pt-2 border-t border-slate-200/50 dark:border-slate-800">
-          <span class="text-xs text-slate-500">提示铃声与震动</span>
+          <span class="text-xs text-slate-500">后台响铃与震动反馈</span>
           <input type="checkbox" id="toggleSoundChime" onchange="updateNotificationSettings()" checked class="w-4 h-4 accent-blue-600" />
         </div>
       </div>
 
+      <!-- Action & Background Test Buttons -->
       <div class="flex flex-wrap items-center justify-end gap-2 pt-1">
         <button onclick="scheduleQuickTestReminderIn5Sec()" class="px-3 py-2 rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-300 text-xs font-semibold tap-scale">
-          ⚡ 5秒后真实到点测试
+          ⚡ 10秒退后台实测 (点完退回桌面)
         </button>
         <button onclick="sendTestTodoNotification()" class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-200 tap-scale">
           🔔 测试待办通知
@@ -567,10 +642,7 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
 
   <script>
     /********************************************************************
-     * 浮光记 FlowNote · 三大板块架构 + 智能时间词解析 + 移动端强通知引擎
-     * 1. 今日想做 (预期规划记录 plan)：新建绝不默认打勾，支持文字时间词自动识别，无时间词则为「全天」
-     * 2. 今日已做 (今天做了什么 done)：记录今日已完成的轨迹，同样支持时间识别，不带刺眼删除线
-     * 3. 随想录 (thought)：随时记录闪念，每晚 23:00 自动提醒回顾
+     * 浮光记 FlowNote · 移动端后台保活强通知 + 极简高颜值自定义时间选择器
      ********************************************************************/
 
     const STORAGE_KEY = 'flownote_meizu_v2_state';
@@ -587,7 +659,115 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
     }
 
     /********************************************************************
-     * CHINESE TIME NLP PARSER (自动识别文字中的时间词，若无则为「全天」)
+     * SYNTHESIZED WAV GENERATOR FOR:
+     * 1. Silent Background Keep-Alive Loop (prevents Android Firefox from freezing tab when user exits to home screen!)
+     * 2. Crisp Alarm Chime Audio Element (plays out loud even when tab is in the background!)
+     ********************************************************************/
+    let silentKeepAliveAudio = null;
+    let alarmChimeAudio = null;
+    let isKeepAliveActive = false;
+
+    function createWavDataUri(durationSec, freqList, volume = 0.25) {
+      const sampleRate = 8000;
+      const numSamples = Math.floor(sampleRate * durationSec);
+      const buffer = new ArrayBuffer(44 + numSamples * 2);
+      const view = new DataView(buffer);
+
+      function writeStr(offset, str) {
+        for (let i = 0; i < str.length; i++) {
+          view.setUint8(offset + i, str.charCodeAt(i));
+        }
+      }
+
+      writeStr(0, 'RIFF');
+      view.setUint32(4, 36 + numSamples * 2, true);
+      writeStr(8, 'WAVE');
+      writeStr(12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true); // PCM
+      view.setUint16(22, 1, true); // Mono
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2, true);
+      view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true);
+      writeStr(36, 'data');
+      view.setUint32(40, numSamples * 2, true);
+
+      for (let i = 0; i < numSamples; i++) {
+        const t = i / sampleRate;
+        let sample = 0;
+        if (volume > 0 && freqList && freqList.length > 0) {
+          const segLen = durationSec / freqList.length;
+          const idx = Math.min(freqList.length - 1, Math.floor(t / segLen));
+          const localT = t - idx * segLen;
+          const env = Math.exp(-localT * 6);
+          sample = Math.sin(2 * Math.PI * freqList[idx] * t) * volume * env;
+        }
+        const pcmVal = Math.max(-1, Math.min(1, sample)) * 32767;
+        view.setInt16(44 + i * 2, pcmVal, true);
+      }
+
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return 'data:audio/wav;base64,' + btoa(binary);
+    }
+
+    function initBackgroundAudioKeepAliveElements() {
+      if (!silentKeepAliveAudio) {
+        // Ultra-quiet imperceptible wave (volume 0.0002) so Android Firefox keeps the tab's JS event loop awake in background
+        silentKeepAliveAudio = new Audio(createWavDataUri(1.0, [440], 0.0002));
+        silentKeepAliveAudio.loop = true;
+        silentKeepAliveAudio.volume = 0.01;
+      }
+      if (!alarmChimeAudio) {
+        // Pleasant 4-note chord chime WAV that can play in background via HTML5 Audio
+        alarmChimeAudio = new Audio(createWavDataUri(1.6, [587.33, 783.99, 880.0, 1174.66], 0.45));
+        alarmChimeAudio.volume = 0.9;
+      }
+    }
+
+    function enableMobileBackgroundKeepAlive(showFeedback = false) {
+      initBackgroundAudioKeepAliveElements();
+      if (!silentKeepAliveAudio) return;
+
+      silentKeepAliveAudio.play().then(() => {
+        isKeepAliveActive = true;
+        const badge = document.getElementById('keepAliveStatusBadge');
+        const btn = document.getElementById('activateKeepAliveBtn');
+        if (badge) {
+          badge.textContent = '运行中';
+          badge.className = 'px-2 py-0.2 rounded-full text-[10px] font-semibold bg-emerald-500 text-white';
+        }
+        if (btn) {
+          btn.textContent = '已保活';
+          btn.className = 'px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs font-semibold shrink-0';
+        }
+        if ('mediaSession' in navigator) {
+          try {
+            navigator.mediaSession.metadata = new MediaMetadata({
+              title: '浮光记 · 待办与 23:00 随想守候中',
+              artist: 'FlowNote 后台提醒服务'
+            });
+          } catch (e) {}
+        }
+        if (showFeedback) {
+          showToast('已激活手机后台保活！退出网页不删后台也能准时响铃通知', '🛡️');
+        }
+      }).catch(() => {});
+    }
+
+    // Automatically unlock background keep-alive on first user tap anywhere
+    window.addEventListener('pointerdown', function unlockOnFirstTap() {
+      if (!isKeepAliveActive) {
+        enableMobileBackgroundKeepAlive(false);
+      }
+    }, { passive: true });
+
+    /********************************************************************
+     * CHINESE TIME NLP PARSER
      ********************************************************************/
     const CN_NUM_MAP = {
       '零': 0, '一': 1, '二': 2, '两': 2, '三': 3, '四': 4,
@@ -626,7 +806,6 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
 
       const now = new Date();
 
-      // 1. Check relative time: "半小时后", "15分钟后", "2小时后", "一刻钟后"
       const halfHrMatch = text.match(/半\s*个?\s*(小时|钟头)\s*后/);
       if (halfHrMatch) {
         const d = new Date(now.getTime() + 30 * 60000);
@@ -662,7 +841,6 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
         }
       }
 
-      // 2. Check explicit colon time: e.g. "下午 3:30", "14:20", "晚上8:05"
       const colonRegex = /(凌晨|早上|明早|早晨|上午|中午|午间|下午|午后|傍晚|晚上|今晚|夜间|夜里|半夜)?\s*(\d{1,2})\s*[:：]\s*(\d{1,2})/;
       const colonMatch = text.match(colonRegex);
       if (colonMatch) {
@@ -682,7 +860,6 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
         }
       }
 
-      // 3. Check Chinese clock time: e.g. "下午3点半", "早上八点二十", "10点15分", "晚上9点", "三点一刻"
       const cnClockRegex = /(凌晨|早上|明早|早晨|上午|中午|午间|下午|午后|傍晚|晚上|今晚|夜间|夜里|半夜)?\s*(\d{1,2}|[零一二两三四五六七八九十]{1,3})\s*[点时](?:\s*(半|一刻|三刻|(\d{1,2}|[零一二两三四五六七八九十]{1,3})\s*分?))?/;
       const cnClockMatch = text.match(cnClockRegex);
       if (cnClockMatch) {
@@ -706,7 +883,6 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
           } else if (/凌晨|半夜/.test(period) && hr === 12) {
             hr = 0;
           } else if (!period && hr >= 1 && hr <= 5) {
-            // Without "凌晨", 1点~5点 in daily tasks usually means 13:00~17:00
             hr += 12;
           }
           const tStr = formatHHMM(hr, min);
@@ -714,7 +890,6 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
         }
       }
 
-      // 4. Check general time-of-day keywords if no specific clock hour was given
       const generalKeywords = [
         { re: /清晨|一大早/, time: '07:30' },
         { re: /早上|早晨|明早|早起/, time: '08:30' },
@@ -732,7 +907,6 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
         }
       }
 
-      // 5. No time word found -> All-day task ("全天")
       return { isAllDay: true, timeStr: '', label: '全天', matchedWord: '' };
     }
 
@@ -740,9 +914,9 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
     let appState = {
       selectedDate: todayStr,
       activeTab: 'timeline',
-      timelineFilter: 'all', // 'all' | 'plan' | 'done'
+      timelineFilter: 'all',
       thoughtFilter: 'all',
-      composerMode: 'plan', // 'plan' (想做什么) | 'done' (今天做了什么) | 'thought' (随想录)
+      composerMode: 'plan',
       composerPeriod: 'wish',
       composerIsDoneLog: false,
       composerThoughtCat: '闪念',
@@ -835,8 +1009,9 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
     let isSyncingNow = false;
     let lastServerUpdatedAt = '';
     let activeDueAlertTodoId = null;
+    let customPickerHour = 12;
+    let customPickerMin = 30;
 
-    // Normalize any legacy items so they fit cleanly into 'plan' vs 'done' and have a timeLabel
     function normalizeTodoItem(item) {
       if (!item || typeof item !== 'object') return item;
       if (!item.section) {
@@ -893,35 +1068,45 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       }
     }
 
-    // Multi-chime gentle alarm + Meizu phone vibration
+    // Plays both HTML5 Audio WAV (works in background tabs!) and Web Audio synth + Vibration
     function playGentleChime(type = 'todo') {
       if (navigator.vibrate) {
         try {
-          navigator.vibrate(type === 'alarm' ? [300, 120, 300, 120, 450] : [80]);
+          navigator.vibrate(type === 'alarm' ? [350, 120, 350, 120, 500] : [80]);
         } catch (e) {}
       }
       if (!appState.notifications || !appState.notifications.soundEnabled) return;
+
+      if (type === 'alarm' || type === 'nightly') {
+        initBackgroundAudioKeepAliveElements();
+        if (alarmChimeAudio) {
+          try {
+            alarmChimeAudio.currentTime = 0;
+            alarmChimeAudio.play().catch(() => {});
+          } catch (e) {}
+        }
+      }
+
       try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         if (!AudioCtx) return;
         const ctx = new AudioCtx();
         const now = ctx.currentTime;
         const notes = type === 'alarm'
-          ? [587.33, 783.99, 880.0, 1174.66, 880.0, 1174.66]
+          ? [587.33, 783.99, 880.0, 1174.66]
           : (type === 'nightly' ? [523.25, 659.25, 783.99] : [587.33, 880.0]);
-        const step = type === 'alarm' ? 0.16 : 0.11;
         notes.forEach((freq, idx) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, now + idx * step);
-          gain.gain.setValueAtTime(0.001, now + idx * step);
-          gain.gain.exponentialRampToValueAtTime(0.15, now + idx * step + 0.03);
-          gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * step + 0.65);
+          osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+          gain.gain.setValueAtTime(0.001, now + idx * 0.12);
+          gain.gain.exponentialRampToValueAtTime(0.14, now + idx * 0.12 + 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.12 + 0.6);
           osc.connect(gain);
           gain.connect(ctx.destination);
-          osc.start(now + idx * step);
-          osc.stop(now + idx * step + 0.7);
+          osc.start(now + idx * 0.12);
+          osc.stop(now + idx * 0.12 + 0.65);
         });
       } catch (e) {}
     }
@@ -1050,6 +1235,80 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
     }
 
     /********************************************************************
+     * CUSTOM SLEEK FLYME TIME PICKER LOGIC
+     ********************************************************************/
+    function syncCustomPickerDisplay() {
+      const hEl = document.getElementById('customPickerHourVal');
+      const mEl = document.getElementById('customPickerMinVal');
+      if (hEl) hEl.textContent = String(customPickerHour).padStart(2, '0');
+      if (mEl) mEl.textContent = String(customPickerMin).padStart(2, '0');
+    }
+
+    function toggleCustomTimePickerPanel() {
+      const panel = document.getElementById('customTimePickerPanel');
+      if (!panel) return;
+      if (panel.classList.contains('hidden')) {
+        const currentVal = document.getElementById('todoRemindTimeInput')?.value || '';
+        if (currentVal && currentVal.includes(':')) {
+          const [h, m] = currentVal.split(':').map(Number);
+          customPickerHour = isNaN(h) ? 12 : h;
+          customPickerMin = isNaN(m) ? 0 : m;
+        } else {
+          const now = new Date();
+          customPickerHour = now.getHours();
+          customPickerMin = (Math.ceil((now.getMinutes() + 1) / 5) * 5) % 60;
+          if (customPickerMin === 0) customPickerHour = (customPickerHour + 1) % 24;
+        }
+        syncCustomPickerDisplay();
+        panel.classList.remove('hidden');
+      } else {
+        panel.classList.add('hidden');
+      }
+    }
+
+    function stepCustomHour(delta) {
+      customPickerHour = (customPickerHour + delta + 24) % 24;
+      syncCustomPickerDisplay();
+      applyPickerTimeToInput(formatHHMM(customPickerHour, customPickerMin), false);
+    }
+
+    function stepCustomMinute(delta) {
+      customPickerMin = (customPickerMin + delta + 60) % 60;
+      syncCustomPickerDisplay();
+      applyPickerTimeToInput(formatHHMM(customPickerHour, customPickerMin), false);
+    }
+
+    function applyQuickRelativeMinutes(mins) {
+      const d = new Date(Date.now() + mins * 60000);
+      customPickerHour = d.getHours();
+      customPickerMin = d.getMinutes();
+      syncCustomPickerDisplay();
+      applyPickerTimeToInput(formatHHMM(customPickerHour, customPickerMin), true);
+    }
+
+    function applyQuickPresetTime(hmStr) {
+      const [h, m] = hmStr.split(':').map(Number);
+      customPickerHour = h;
+      customPickerMin = m;
+      syncCustomPickerDisplay();
+      applyPickerTimeToInput(hmStr, true);
+    }
+
+    function confirmCustomTimePicker() {
+      const hm = formatHHMM(customPickerHour, customPickerMin);
+      applyPickerTimeToInput(hm, true);
+    }
+
+    function applyPickerTimeToInput(hmStr, closePanel = true) {
+      const input = document.getElementById('todoRemindTimeInput');
+      if (input) input.value = hmStr;
+      if (closePanel) {
+        document.getElementById('customTimePickerPanel')?.classList.add('hidden');
+      }
+      handleComposerInputNlp();
+    }
+
+    /********************************************************************
      * COMPOSER & LIVE NLP TIME RECOGNITION
      ********************************************************************/
     function openComposerSheet(defaultMode) {
@@ -1060,6 +1319,7 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       if (mode === 'todo') mode = 'plan';
       setComposerMode(mode);
 
+      document.getElementById('customTimePickerPanel')?.classList.add('hidden');
       const modal = document.getElementById('composerSheetModal');
       const input = document.getElementById('quickCaptureInput');
       if (modal) {
@@ -1075,6 +1335,7 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
     function closeComposerSheet() {
       const modal = document.getElementById('composerSheetModal');
       const input = document.getElementById('quickCaptureInput');
+      document.getElementById('customTimePickerPanel')?.classList.add('hidden');
       if (input) input.blur();
       if (modal) {
         modal.classList.add('hidden');
@@ -1134,34 +1395,53 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       renderComposerPills();
     }
 
-    // Live NLP feedback as the user types
     function handleComposerInputNlp() {
       const text = document.getElementById('quickCaptureInput')?.value || '';
       const manualTime = document.getElementById('todoRemindTimeInput')?.value || '';
       const badge = document.getElementById('nlpTimeBadge');
       const hint = document.getElementById('nlpTimeHint');
+      const btnLabel = document.getElementById('customTimeBtnLabel');
+      const triggerBtn = document.getElementById('customTimeTriggerBtn');
+      const clearBtn = document.getElementById('clearTimePillBtn');
       if (!badge || !hint) return;
 
       if (manualTime) {
         badge.textContent = `🕒 ${manualTime}`;
-        badge.className = 'px-2 py-0.5 rounded-md text-[11px] font-mono font-semibold bg-blue-600 text-white shrink-0';
+        badge.className = 'px-2 py-0.5 rounded-lg text-[11px] font-mono font-semibold bg-blue-600 text-white shrink-0';
         hint.textContent = appState.composerMode === 'plan'
-          ? `已手动设定时间，将在 ${manualTime} 准时提醒`
-          : `已指定记录时间：${manualTime}`;
+          ? `将在 ${manualTime} 准时响铃提醒`
+          : `记录时间：${manualTime}`;
+        if (btnLabel) btnLabel.textContent = manualTime;
+        if (triggerBtn) {
+          triggerBtn.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-300 border border-blue-500/30 tap-scale';
+        }
+        if (clearBtn) {
+          clearBtn.classList.remove('hidden');
+          clearBtn.classList.add('inline-flex');
+        }
         return;
+      }
+
+      if (btnLabel) btnLabel.textContent = '选择时间';
+      if (triggerBtn) {
+        triggerBtn.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/90 dark:border-slate-700 hover:border-blue-500 tap-scale';
+      }
+      if (clearBtn) {
+        clearBtn.classList.add('hidden');
+        clearBtn.classList.remove('inline-flex');
       }
 
       const parsed = parseTimeFromText(text);
       if (!parsed.isAllDay) {
         badge.textContent = `🕒 ${parsed.label}`;
-        badge.className = 'px-2 py-0.5 rounded-md text-[11px] font-mono font-semibold bg-blue-600 text-white shrink-0';
+        badge.className = 'px-2 py-0.5 rounded-lg text-[11px] font-mono font-semibold bg-blue-600 text-white shrink-0';
         hint.textContent = appState.composerMode === 'plan'
-          ? `已识别「${parsed.matchedWord}」→ 设为 ${parsed.timeStr} 提醒`
-          : `已识别时间词「${parsed.matchedWord}」→ ${parsed.timeStr}`;
+          ? `自动识别「${parsed.matchedWord}」→ ${parsed.timeStr} 提醒`
+          : `自动识别「${parsed.matchedWord}」→ ${parsed.timeStr}`;
       } else {
         badge.textContent = '全天';
-        badge.className = 'px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-200/80 dark:bg-slate-700 text-slate-700 dark:text-slate-200 shrink-0';
-        hint.textContent = '未含时间词，自动设为「全天」任务（也可右侧选时间）';
+        badge.className = 'px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-slate-200/80 dark:bg-slate-700 text-slate-700 dark:text-slate-200 shrink-0';
+        hint.textContent = '未含时间词，默认全天任务（可点右侧选择时间）';
       }
     }
 
@@ -1181,6 +1461,7 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
     function clearTodoRemindTime() {
       const el = document.getElementById('todoRemindTimeInput');
       if (el) el.value = '';
+      document.getElementById('customTimePickerPanel')?.classList.add('hidden');
       handleComposerInputNlp();
     }
 
@@ -1220,8 +1501,6 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
         const finalTimeLabel = finalTimeStr || '全天';
         const isPlanMode = appState.composerMode === 'plan';
 
-        // CRITICAL FIX: Plan (待办) items are ALWAYS created with completed: false!
-        // Only when the user clicks the checkbox themselves does it become completed!
         appState.todos.unshift({
           id: (isPlanMode ? 'plan_' : 'done_') + nowTs + '_' + Math.random().toString(36).slice(2, 6),
           date: appState.selectedDate,
@@ -1230,7 +1509,7 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
           text,
           timeLabel: finalTimeLabel,
           remindTime: isPlanMode ? finalTimeStr : '',
-          completed: false, // Never pre-crossed-out when created as a to-do!
+          completed: false,
           isLog: !isPlanMode,
           notified: false,
           createdAt: nowTs,
@@ -1243,11 +1522,14 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
         saveToLocal(true);
         renderAll();
 
-        if (isPlanMode) {
-          showToast(
-            finalTimeStr ? `已加入待办 · 将在 ${finalTimeStr} 提醒你` : '已加入今日全天待办',
-            '🎯'
-          );
+        if (isPlanMode && finalTimeStr) {
+          enableMobileBackgroundKeepAlive(false);
+          if ('Notification' in window && Notification.permission === 'default') {
+            requestSystemNotificationPermission();
+          }
+          showToast(`已加入待办 · 将在 ${finalTimeStr} 准时提醒`, '🎯');
+        } else if (isPlanMode) {
+          showToast('已加入今日全天待办', '🎯');
         } else {
           showToast(`已记入今日已做 [${finalTimeLabel}]`, '✨');
         }
@@ -1290,7 +1572,7 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
         const aIsAllDay = !a.timeLabel || a.timeLabel === '全天';
         const bIsAllDay = !b.timeLabel || b.timeLabel === '全天';
         if (aIsAllDay !== bIsAllDay) {
-          return aIsAllDay ? 1 : -1; // Specific timed tasks appear first, All-day tasks follow
+          return aIsAllDay ? 1 : -1;
         }
         if (!aIsAllDay && !bIsAllDay && a.timeLabel !== b.timeLabel) {
           return a.timeLabel.localeCompare(b.timeLabel);
@@ -1334,7 +1616,6 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
 
       let html = '';
 
-      // SECTION 1: 今日想做 · 预期规划 (待办清单)
       if (appState.timelineFilter === 'all' || appState.timelineFilter === 'plan') {
         html += `
           <section class="bg-white dark:bg-flyme-darkCard rounded-2xl px-4 py-3.5 border border-slate-200/70 dark:border-slate-800/80">
@@ -1359,7 +1640,6 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
         `;
       }
 
-      // SECTION 2: 今日已做 · 做了什么 (实录记录，无删除线)
       if (appState.timelineFilter === 'all' || appState.timelineFilter === 'done') {
         html += `
           <section class="bg-white dark:bg-flyme-darkCard rounded-2xl px-4 py-3.5 border border-slate-200/70 dark:border-slate-800/80">
@@ -1387,7 +1667,6 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       container.innerHTML = html;
     }
 
-    // Row for SECTION 1: 今日想做 (待办) — Uncompleted items have clean empty circle, NO green check until user taps!
     function renderPlanTodoRow(item) {
       const safeText = escapeHtml(item.text);
       const tLabel = item.timeLabel || item.remindTime || '全天';
@@ -1404,7 +1683,6 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
               ${item.completed ? '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>' : ''}
             </button>
 
-            <!-- Time Badge right in front of the task -->
             <span class="shrink-0 text-[11px] font-mono px-1.5 py-0.5 rounded-md ${
               item.completed
                 ? 'bg-slate-100 dark:bg-slate-800 text-slate-400'
@@ -1429,7 +1707,6 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       `;
     }
 
-    // Row for SECTION 2: 今天做了什么 (已做记录) — Clean timeline dot + time badge + crisp text (NO strikethrough!)
     function renderDoneLogRow(item) {
       const safeText = escapeHtml(item.text);
       const tLabel = item.timeLabel || '全天';
@@ -1465,7 +1742,6 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       target.completed = !target.completed;
       target.updatedAt = Date.now();
 
-      // When user manually marks a planned task as completed, also offer/record it cleanly
       if (target.completed) {
         playGentleChime('todo');
         showToast('已完成该项待办！', '✅');
@@ -1649,13 +1925,21 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
     }
 
     /********************************************************************
-     * RELIABLE MOBILE NOTIFICATION ENGINE
-     * Fixes why Android Firefox didn't pop up notifications at set time:
-     * 1. Uses >= minute comparison instead of strict === so throttled timers never miss a minute!
-     * 2. Uses a Web Worker 1-second background ticker (immune to main-thread tab throttling).
-     * 3. Dispatches BOTH ServiceWorkerRegistration.showNotification() (required on Android) AND new Notification().
-     * 4. Opens an unmissable in-app Due Alert Modal (#dueAlertModal) + Vibration + Multi-chime sound!
+     * MOBILE & DESKTOP NOTIFICATION ENGINE + BACKGROUND KEEP-ALIVE
      ********************************************************************/
+    function stepNightlyHour(delta) {
+      const current = appState.notifications?.nightlyTime || '23:00';
+      let [h, m] = current.split(':').map(Number);
+      if (isNaN(h)) h = 23;
+      h = (h + delta + 24) % 24;
+      const nextTime = formatHHMM(h, m || 0);
+      const picker = document.getElementById('nightlyRemindTimePicker');
+      const pill = document.getElementById('nightlyTimeDisplayPill');
+      if (picker) picker.value = nextTime;
+      if (pill) pill.textContent = nextTime;
+      updateNotificationSettings();
+    }
+
     function toggleNotificationCenterModal() {
       const m = document.getElementById('notificationModal');
       if (!m) return;
@@ -1680,19 +1964,27 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       const n = appState.notifications;
       const nightlyToggle = document.getElementById('toggleNightlyThoughtNotif');
       const nightlyPicker = document.getElementById('nightlyRemindTimePicker');
+      const nightlyPill = document.getElementById('nightlyTimeDisplayPill');
       const todoToggle = document.getElementById('toggleTodoNotif');
       const soundToggle = document.getElementById('toggleSoundChime');
 
       if (nightlyToggle) nightlyToggle.checked = n.nightlyEnabled !== false;
       if (nightlyPicker) nightlyPicker.value = n.nightlyTime || '23:00';
+      if (nightlyPill) nightlyPill.textContent = n.nightlyTime || '23:00';
       if (todoToggle) todoToggle.checked = n.todoNotifEnabled !== false;
       if (soundToggle) soundToggle.checked = n.soundEnabled !== false;
 
       const permDesc = document.getElementById('notifPermissionDesc');
       const permBtn = document.getElementById('requestPermBtn');
-      if ('Notification' in window && Notification.permission === 'granted') {
-        if (permDesc) permDesc.textContent = '✅ 系统通知已授权（含网页强弹窗 + 震动铃声兜底）';
-        if (permBtn) permBtn.textContent = '已开启';
+      const diagLog = document.getElementById('notifDiagnosticLog');
+      if ('Notification' in window) {
+        if (Notification.permission === 'granted') {
+          if (permDesc) permDesc.textContent = '✅ 网页通知权限已开启（魅族手机请确认系统设置中允许了 Firefox 通知）';
+          if (permBtn) permBtn.textContent = '重新检测';
+          if (diagLog) diagLog.textContent = `诊断：网页权限=已授权 | 后台保活=${isKeepAliveActive ? '运行中' : '点击上方激活'}`;
+        } else {
+          if (diagLog) diagLog.textContent = `诊断：网页权限=${Notification.permission}（请点击右侧开启系统通知）`;
+        }
       }
     }
 
@@ -1704,51 +1996,80 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       n.soundEnabled = document.getElementById('toggleSoundChime')?.checked ?? true;
       saveToLocal(true);
       updateLiveCapsuleCountdown();
-      showToast(`提醒设置已保存`, '🔔');
+      showToast(`提醒设置已保存 (${n.nightlyTime})`, '🔔');
     }
 
     async function requestSystemNotificationPermission() {
+      enableMobileBackgroundKeepAlive(false);
       if (!('Notification' in window)) {
-        showToast('已启用应用内强弹窗与震动提醒', '🔔');
+        showToast('当前环境不支持系统通知，已开启应用内响铃弹窗', '🔔');
         return;
       }
       try {
         const perm = await Notification.requestPermission();
         syncNotificationModalUI();
         if (perm === 'granted') {
-          await dispatchBrowserNotification('浮光记 · 通知已激活', '到点将同时推送系统通知与强提醒弹窗。');
+          await dispatchBrowserNotification('⏰ 浮光记 · 通知测试', '系统级通知通道已打通！');
           showToast('通知权限已开启', '✅');
+        } else {
+          showToast('请在浏览器地址栏左侧锁图标中允许通知权限', '⚠️');
         }
       } catch (e) {}
     }
 
-    // Supports both Android ServiceWorkerRegistration.showNotification and Desktop new Notification
+    // Compatible with both Desktop Edge/Chrome AND Mobile Firefox/Chrome
     async function dispatchBrowserNotification(title, body) {
-      if (!('Notification' in window) || Notification.permission !== 'granted') return;
-      const options = {
-        body,
-        vibrate: [300, 120, 300, 120, 400],
-        requireInteraction: true,
-        tag: 'flownote-reminder-' + Date.now()
-      };
-      let sentViaSw = false;
+      const diagLog = document.getElementById('notifDiagnosticLog');
+      if (!('Notification' in window)) {
+        if (diagLog) diagLog.textContent = '诊断：浏览器不支持 Notification API';
+        return;
+      }
+      if (Notification.permission !== 'granted') {
+        if (diagLog) diagLog.textContent = '诊断：未授予网页通知权限';
+        return;
+      }
+
+      let delivered = false;
+      let errMsg = '';
+
+      // 1. Try ServiceWorkerRegistration.showNotification first if available
       if ('serviceWorker' in navigator) {
         try {
           const reg = await navigator.serviceWorker.getRegistration();
           if (reg && reg.showNotification) {
-            await reg.showNotification(title, options);
-            sentViaSw = true;
+            await reg.showNotification(title, {
+              body,
+              vibrate: [300, 120, 300, 120, 400],
+              tag: 'flownote-' + Date.now()
+            });
+            delivered = true;
           }
-        } catch (e) {}
+        } catch (e) {
+          errMsg = e.message || String(e);
+        }
       }
-      if (!sentViaSw) {
+
+      // 2. Fallback to standard clean new Notification(title, { body })
+      // Note: Do NOT pass requireInteraction:true here because Firefox Android rejects notifications with unsupported options!
+      if (!delivered) {
         try {
-          new Notification(title, options);
-        } catch (e) {}
+          const n = new Notification(title, { body });
+          n.onclick = () => {
+            try { window.focus(); } catch (e) {}
+          };
+          delivered = true;
+        } catch (e) {
+          errMsg = e.message || String(e);
+        }
+      }
+
+      if (diagLog) {
+        diagLog.textContent = delivered
+          ? `诊断：系统通知已发出 (${formatHHMM(new Date().getHours(), new Date().getMinutes())}) · 若手机状态栏未显示，请在魅族「设置->通知->Firefox」中开启允许通知`
+          : `诊断：通知受阻 (${errMsg}) · 已由后台响铃接管`;
       }
     }
 
-    // Show unmissable in-app Due Alert Modal when a task's time arrives
     function openDueAlertModal(todo) {
       activeDueAlertTodoId = todo.id;
       const modal = document.getElementById('dueAlertModal');
@@ -1804,29 +2125,31 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
     }
 
     function sendTestTodoNotification() {
+      enableMobileBackgroundKeepAlive(false);
       closeNotificationCenterModal();
       playGentleChime('alarm');
-      dispatchBrowserNotification('⏰ 待办提醒 · 浮光记', '这是一条测试待办通知：到点将自动弹出此提醒框！');
+      dispatchBrowserNotification('⏰ 待办提醒 · 浮光记', '测试通知：到设定时间时将自动响铃并推送通知！');
       openDueAlertModal({
         id: '',
         remindTime: formatHHMM(new Date().getHours(), new Date().getMinutes()),
-        text: '测试待办通知：到设定时间时，手机会自动响铃震动并弹出此提醒框！'
+        text: '测试待办通知：到设定时间时，手机会自动响起和弦铃声、震动并弹出通知！'
       });
     }
 
-    // 5-second real countdown test so user can verify automatic scheduled trigger on phone
+    // 10-second real background test: user taps this, exits to phone home screen, and 10 seconds later it rings & notifies in background!
     function scheduleQuickTestReminderIn5Sec() {
+      enableMobileBackgroundKeepAlive(false);
       closeNotificationCenterModal();
-      showToast('已设定 5 秒后自动触发待办提醒，请稍候...', '⚡');
+      showToast('已启动 10 秒倒计时！现在请直接按 Home 键退回手机桌面等待响铃通知...', '🛡️');
       setTimeout(() => {
         playGentleChime('alarm');
-        dispatchBrowserNotification('⏰ 到点提醒 · 浮光记', '5秒定时测试成功！待办到点会自动弹出。');
+        dispatchBrowserNotification('⏰ 后台到点提醒 · 浮光记', '10秒后台保活测试成功！退出网页也能准时收到提醒。');
         openDueAlertModal({
           id: '',
           remindTime: formatHHMM(new Date().getHours(), new Date().getMinutes()),
-          text: '⚡ 5 秒自动触发测试成功！你的待办到点时就会这样自动弹出提醒。'
+          text: '🎉 10 秒后台保活测试成功！即使退出网页回到手机桌面，也能准时响铃并触发提醒。'
         });
-      }, 5000);
+      }, 10000);
     }
 
     function triggerNightlyReflectionModal() {
@@ -1881,11 +2204,9 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       return h * 60 + m;
     }
 
-    // Core Scheduler: Checks every second and uses >= minute comparison so throttled mobile browsers NEVER miss a reminder!
     function updateLiveCapsuleCountdown() {
       const now = new Date();
       const currentMinutes = now.getHours() * 60 + now.getMinutes();
-      const currentHM = formatHHMM(now.getHours(), now.getMinutes());
       const todayDate = getTodayDateString(0);
       const targetTime = appState.notifications?.nightlyTime || '23:00';
 
@@ -1901,7 +2222,6 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
         }
       }
 
-      // Check due To-Do reminders using >= minute window (so even if mobile tab was throttled during exact second 00, it still fires!)
       if (appState.notifications?.todoNotifEnabled !== false) {
         let changed = false;
         appState.todos.forEach(todo => {
@@ -1913,7 +2233,6 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
             todo.remindTime
           ) {
             const targetMins = hmToMinutes(todo.remindTime);
-            // Fire if current time has reached or passed targetMins (within 60 minutes window so old morning defaults don't fire at night unless newly set)
             const createdDate = new Date(todo.createdAt || Date.now());
             const createdMins = createdDate.getHours() * 60 + createdDate.getMinutes();
             const isEligible = targetMins >= 0 && currentMinutes >= targetMins && (currentMinutes - targetMins <= 30 || createdMins <= targetMins);
@@ -1934,7 +2253,6 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
         }
       }
 
-      // Check 23:00 Nightly Thought Notification
       const nightlyTargetMins = hmToMinutes(targetTime);
       if (
         appState.notifications?.nightlyEnabled !== false &&
@@ -1949,14 +2267,13 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       }
     }
 
-    // Start a dedicated Web Worker 1-second timer so mobile browsers don't freeze the countdown
     function startReliableBackgroundTicker() {
       if (notificationTimerId) clearInterval(notificationTimerId);
-      notificationTimerId = setInterval(updateLiveCapsuleCountdown, 2000);
+      notificationTimerId = setInterval(updateLiveCapsuleCountdown, 1500);
 
       try {
         const blob = new Blob([
-          'setInterval(function(){ postMessage("tick"); }, 1500);'
+          'setInterval(function(){ postMessage("tick"); }, 1000);'
         ], { type: 'application/javascript' });
         workerTimer = new Worker(URL.createObjectURL(blob));
         workerTimer.onmessage = () => {
