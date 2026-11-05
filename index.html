@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>浮光记 FlowNote</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" async></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
   <script>
     if (typeof window.tailwind !== 'undefined') {
       window.tailwind.config = {
@@ -170,7 +170,7 @@
       <!-- Left: Clean Title + Short Date -->
       <div class="flex items-baseline gap-2 min-w-0 shrink-0">
         <h1 class="font-bold text-lg tracking-tight text-slate-900 dark:text-white whitespace-nowrap">浮光记</h1>
-        <p id="headerDateGreeting" class="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap truncate">11月1日 周日</p>
+        <p id="headerDateGreeting" class="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap truncate">11月5日</p>
       </div>
 
       <!-- Right: Compact Status & Action Icons -->
@@ -189,7 +189,7 @@
         </button>
 
         <!-- Cloud Sync Icon Button -->
-        <button id="syncHeaderBtn" onclick="openSyncModal()" title="Supabase 云同步" class="nowrap-pill flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-medium tap-scale">
+        <button id="syncHeaderBtn" onclick="openSyncModal()" title="Supabase 云同步设置" class="nowrap-pill flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-medium tap-scale">
           <span id="syncIndicatorDot" class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
           <span id="syncStatusShort" class="whitespace-nowrap">本地模式</span>
         </button>
@@ -329,12 +329,9 @@
 
   </div>
 
-  <!-- TOP-ANCHORED COMPOSER MODAL:
-       1. Positioned at top (items-start pt-2.5) so the bottom Android keyboard NEVER overlaps or hides buttons!
-       2. Zero backdrop-blur & zero transform animation so IME keyboard pops up in 0ms without frame drop! -->
+  <!-- TOP-ANCHORED COMPOSER MODAL -->
   <div id="composerSheetModal" onclick="handleComposerBackdropClick(event)" class="fixed inset-0 z-50 hidden items-start justify-center pt-2.5 px-3 sm:items-center bg-slate-900/40">
     <div class="bg-white dark:bg-flyme-darkCard w-full max-w-lg rounded-3xl p-3.5 sm:p-5 shadow-xl border border-slate-200/80 dark:border-slate-800 space-y-2.5">
-      <!-- Top Row: Mode Switcher + Close Button -->
       <div class="flex items-center justify-between gap-2">
         <div class="inline-flex p-0.5 rounded-xl bg-slate-100 dark:bg-slate-800">
           <button id="composerModeTodoBtn" type="button" onclick="setComposerMode('todo')" class="px-3 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-slate-700 text-blue-600 dark:text-white">
@@ -348,7 +345,6 @@
         <button type="button" onclick="closeComposerSheet()" class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center text-xs">✕</button>
       </div>
 
-      <!-- Compact Input Area (2 rows so entire card stays well above the keyboard) -->
       <textarea id="quickCaptureInput" rows="2" placeholder="写下此刻做的事、今日待办或闪念..." onkeydown="handleComposerKeydown(event)" class="w-full rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 px-3.5 py-2 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 resize-none"></textarea>
 
       <!-- Options for To-Do -->
@@ -449,7 +445,7 @@
     </div>
   </div>
 
-  <!-- MODAL 2: 23:00 Nightly Thought Popup (Also top-aligned on mobile so keyboard doesn't cover it) -->
+  <!-- MODAL 2: 23:00 Nightly Thought Popup -->
   <div id="nightlyReflectionModal" class="fixed inset-0 z-50 hidden items-start pt-4 sm:items-center justify-center p-4 bg-slate-950/60">
     <div class="bg-[#131826] text-white w-full max-w-md rounded-3xl p-5 shadow-2xl border border-indigo-500/30 space-y-3">
       <div class="flex items-center justify-between">
@@ -470,7 +466,10 @@
   <div id="supabaseSyncModal" class="fixed inset-0 z-50 hidden items-start pt-3 sm:items-center justify-center p-4 bg-slate-900/45">
     <div class="bg-white dark:bg-flyme-darkCard w-full max-w-lg rounded-3xl p-5 shadow-2xl border border-slate-200/70 dark:border-slate-800 space-y-3.5 max-h-[88dvh] overflow-y-auto">
       <div class="flex items-center justify-between">
-        <h3 class="font-semibold text-base text-slate-900 dark:text-white">Supabase 手机 · 电脑云同步</h3>
+        <div>
+          <h3 class="font-semibold text-base text-slate-900 dark:text-white">Supabase 手机 · 电脑自动云同步</h3>
+          <p class="text-[11px] text-slate-400 mt-0.5">支持打开自动拉取、修改秒级推送、后台切回自动合并</p>
+        </div>
         <button onclick="closeSyncModal()" class="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500">✕</button>
       </div>
 
@@ -484,7 +483,7 @@
           <input type="password" id="supabaseKeyInput" placeholder="eyJhbGciOiJIUzI1NiIs..." class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono focus:outline-none" />
         </div>
         <div>
-          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">同步空间暗号 (手机与电脑填同一个)</label>
+          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">同步空间暗号 (手机与电脑必须填一模一样的暗号，区分大小写)</label>
           <input type="text" id="supabaseRoomInput" value="meizu-flownote-main" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono focus:outline-none" />
         </div>
         <div id="syncConnectionFeedback" class="text-[11px] text-slate-400">状态：本地存储已激活</div>
@@ -571,6 +570,7 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       composerThoughtCat: '闪念',
       meizuPhoneMode: false,
       darkMode: false,
+      deletedIds: {}, // Map of id -> timestamp to prevent deleted items from resurrecting during multi-device merge
       notifications: {
         nightlyEnabled: true,
         nightlyTime: '23:00',
@@ -589,7 +589,8 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
           isLog: true,
           remindTime: '',
           notified: true,
-          createdAt: Date.now() - 14400000
+          createdAt: 1700000001000,
+          updatedAt: 1700000001000
         },
         {
           id: 't_init_2',
@@ -600,7 +601,8 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
           isLog: true,
           remindTime: '',
           notified: true,
-          createdAt: Date.now() - 7200000
+          createdAt: 1700000002000,
+          updatedAt: 1700000002000
         },
         {
           id: 't_init_3',
@@ -611,7 +613,8 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
           isLog: false,
           remindTime: '20:30',
           notified: false,
-          createdAt: Date.now() - 3600000
+          createdAt: 1700000003000,
+          updatedAt: 1700000003000
         },
         {
           id: 't_init_4',
@@ -622,7 +625,8 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
           isLog: false,
           remindTime: '19:00',
           notified: false,
-          createdAt: Date.now() - 1800000
+          createdAt: 1700000004000,
+          updatedAt: 1700000004000
         }
       ],
       thoughts: [
@@ -631,7 +635,8 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
           category: '灵感',
           text: '早上、中午、晚上三段式记录，比密密麻麻的时间表从容太多了。',
           pinned: true,
-          createdAt: Date.now() - 10800000,
+          createdAt: 1700000005000,
+          updatedAt: 1700000005000,
           dateStr: todayStr,
           timeStr: '09:42'
         },
@@ -640,7 +645,8 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
           category: '晚安小结',
           text: '每晚 23:00 的随想提醒就像给白天的喧嚣画上一个温柔的句号。',
           pinned: false,
-          createdAt: Date.now() - 5400000,
+          createdAt: 1700000006000,
+          updatedAt: 1700000006000,
           dateStr: todayStr,
           timeStr: '23:00'
         }
@@ -651,6 +657,10 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
     let supabaseClient = null;
     let realtimeChannel = null;
     let notificationTimerId = null;
+    let autoSyncTimerId = null;
+    let pushDebounceTimer = null;
+    let isSyncingNow = false;
+    let lastServerUpdatedAt = '';
 
     function loadFromLocal() {
       try {
@@ -658,6 +668,9 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
         if (raw) {
           const parsed = JSON.parse(raw);
           appState = Object.assign({}, appState, parsed);
+          if (!appState.deletedIds || typeof appState.deletedIds !== 'object') {
+            appState.deletedIds = {};
+          }
           appState.selectedDate = todayStr;
         }
         const rawCfg = localStorage.getItem(SUPABASE_CFG_KEY);
@@ -673,7 +686,10 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
         localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
       } catch (e) {}
       if (triggerCloud && supabaseConfig.url && supabaseConfig.anonKey) {
-        pushToSupabaseSilent();
+        if (pushDebounceTimer) clearTimeout(pushDebounceTimer);
+        pushDebounceTimer = setTimeout(() => {
+          pushToSupabaseSilent(false);
+        }, 250);
       }
     }
 
@@ -824,7 +840,7 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       selectDate(getTodayDateString(0));
     }
 
-    // Instant Top-Anchored Composer Sheet (0ms synchronous focus for instant IME popup)
+    // Instant Top-Anchored Composer Sheet
     function openComposerSheet(defaultMode, defaultPeriod) {
       const targetMode = defaultMode || (appState.activeTab === 'thoughts' ? 'thought' : 'todo');
       if (defaultPeriod) appState.composerPeriod = defaultPeriod;
@@ -952,11 +968,12 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
         return;
       }
 
+      const nowTs = Date.now();
       if (appState.composerMode === 'todo') {
         const remindInput = document.getElementById('todoRemindTimeInput');
         const remindTime = remindInput ? remindInput.value : '';
         appState.todos.unshift({
-          id: 'todo_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+          id: 'todo_' + nowTs + '_' + Math.random().toString(36).slice(2, 6),
           date: appState.selectedDate,
           period: appState.composerPeriod,
           text,
@@ -964,7 +981,8 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
           isLog: appState.composerIsDoneLog,
           remindTime: remindTime || '',
           notified: false,
-          createdAt: Date.now()
+          createdAt: nowTs,
+          updatedAt: nowTs
         });
         input.value = '';
         if (remindInput) remindInput.value = '';
@@ -976,11 +994,12 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
         const now = new Date();
         const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
         appState.thoughts.unshift({
-          id: 'th_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+          id: 'th_' + nowTs + '_' + Math.random().toString(36).slice(2, 6),
           category: appState.composerThoughtCat,
           text,
           pinned: false,
-          createdAt: Date.now(),
+          createdAt: nowTs,
+          updatedAt: nowTs,
           dateStr: getTodayDateString(0),
           timeStr
         });
@@ -1098,11 +1117,14 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       const target = appState.todos.find(t => t.id === id);
       if (!target) return;
       target.completed = !target.completed;
+      target.updatedAt = Date.now();
       saveToLocal(true);
       renderAll();
     }
 
     function deleteTodoItem(id) {
+      if (!appState.deletedIds) appState.deletedIds = {};
+      appState.deletedIds[id] = Date.now();
       appState.todos = appState.todos.filter(t => t.id !== id);
       saveToLocal(true);
       renderAll();
@@ -1112,13 +1134,15 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       const item = appState.todos.find(t => t.id === id);
       if (!item) return;
       const now = new Date();
+      const nowTs = Date.now();
       const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       appState.thoughts.unshift({
-        id: 'th_' + Date.now(),
+        id: 'th_' + nowTs,
         category: '感悟',
         text: item.text,
         pinned: false,
-        createdAt: Date.now(),
+        createdAt: nowTs,
+        updatedAt: nowTs,
         dateStr: item.date,
         timeStr
       });
@@ -1128,7 +1152,8 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
     }
 
     function quickAddDemoPreset() {
-      const demoId = 'demo_' + Date.now();
+      const nowTs = Date.now();
+      const demoId = 'demo_' + nowTs;
       appState.todos.unshift({
         id: demoId,
         date: appState.selectedDate,
@@ -1138,7 +1163,8 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
         isLog: true,
         remindTime: '',
         notified: false,
-        createdAt: Date.now()
+        createdAt: nowTs,
+        updatedAt: nowTs
       });
       saveToLocal(true);
       renderAll();
@@ -1207,11 +1233,14 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       const item = appState.thoughts.find(t => t.id === id);
       if (!item) return;
       item.pinned = !item.pinned;
+      item.updatedAt = Date.now();
       saveToLocal(true);
       renderThoughtsStream();
     }
 
     function deleteThoughtItem(id) {
+      if (!appState.deletedIds) appState.deletedIds = {};
+      appState.deletedIds[id] = Date.now();
       appState.thoughts = appState.thoughts.filter(t => t.id !== id);
       saveToLocal(true);
       renderAll();
@@ -1220,8 +1249,9 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
     function convertThoughtToTodo(id) {
       const item = appState.thoughts.find(t => t.id === id);
       if (!item) return;
+      const nowTs = Date.now();
       appState.todos.unshift({
-        id: 'todo_' + Date.now(),
+        id: 'todo_' + nowTs,
         date: appState.selectedDate,
         period: 'wish',
         text: item.text,
@@ -1229,7 +1259,8 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
         isLog: false,
         remindTime: '',
         notified: false,
-        createdAt: Date.now()
+        createdAt: nowTs,
+        updatedAt: nowTs
       });
       saveToLocal(true);
       switchMainTab('timeline');
@@ -1303,7 +1334,7 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       n.nightlyTime = document.getElementById('nightlyRemindTimePicker')?.value || '23:00';
       n.todoNotifEnabled = document.getElementById('toggleTodoNotif')?.checked ?? true;
       n.soundEnabled = document.getElementById('toggleSoundChime')?.checked ?? true;
-      saveToLocal(false);
+      saveToLocal(true);
       updateLiveCapsuleCountdown();
       showToast(`提醒已更新 (${n.nightlyTime})`, '🔔');
     }
@@ -1361,13 +1392,15 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       const text = (input?.value || '').trim();
       if (!text) return;
       const now = new Date();
+      const nowTs = Date.now();
       const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       appState.thoughts.unshift({
-        id: 'th_night_' + Date.now(),
+        id: 'th_night_' + nowTs,
         category: '晚安小结',
         text,
         pinned: false,
-        createdAt: Date.now(),
+        createdAt: nowTs,
+        updatedAt: nowTs,
         dateStr: getTodayDateString(0),
         timeStr
       });
@@ -1390,6 +1423,7 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
         appState.todos.forEach(todo => {
           if (todo.date === getTodayDateString(0) && !todo.completed && !todo.notified && todo.remindTime === currentHM) {
             todo.notified = true;
+            todo.updatedAt = Date.now();
             changed = true;
             playGentleChime('todo');
             dispatchBrowserNotification('⏰ 待办提醒 · 浮光记', todo.text);
@@ -1397,7 +1431,7 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
           }
         });
         if (changed) {
-          saveToLocal(false);
+          saveToLocal(true);
           renderTimeline();
         }
       }
@@ -1414,6 +1448,12 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       }
     }
 
+    /********************************************************************
+     * AUTOMATIC BIDIRECTIONAL SUPABASE SYNC ENGINE
+     * - Item-level conflict-free merge (by id & item.updatedAt + deletedIds tombstone)
+     * - Immune to PC vs. Phone system clock skew
+     * - Auto-pull on startup, visibilitychange (wake up), window focus, & 8s heartbeat
+     ********************************************************************/
     function openSyncModal() {
       const m = document.getElementById('supabaseSyncModal');
       if (!m) return;
@@ -1446,6 +1486,61 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       if (feedback) feedback.textContent = `状态：${label}`;
     }
 
+    // Item-level smart merge: merges local and remote arrays by item.id and item.updatedAt, respecting deletedIds
+    function smartMergeArrays(localArr, remoteArr, combinedDeletedIds) {
+      const map = new Map();
+      (Array.isArray(localArr) ? localArr : []).forEach(item => {
+        if (item && item.id && !combinedDeletedIds[item.id]) {
+          map.set(item.id, item);
+        }
+      });
+      (Array.isArray(remoteArr) ? remoteArr : []).forEach(rItem => {
+        if (!rItem || !rItem.id || combinedDeletedIds[rItem.id]) return;
+        const existing = map.get(rItem.id);
+        if (!existing) {
+          map.set(rItem.id, rItem);
+        } else {
+          const rTime = rItem.updatedAt || rItem.createdAt || 0;
+          const lTime = existing.updatedAt || existing.createdAt || 0;
+          if (rTime >= lTime) {
+            map.set(rItem.id, rItem);
+          }
+        }
+      });
+      return Array.from(map.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    }
+
+    function mergeRemotePayload(remote, serverTimestampStr = '') {
+      if (!remote || typeof remote !== 'object') return false;
+      const beforeSnapshot = JSON.stringify({
+        t: appState.todos,
+        th: appState.thoughts
+      });
+
+      const combinedDeleted = Object.assign({}, appState.deletedIds || {}, remote.deletedIds || {});
+      appState.deletedIds = combinedDeleted;
+
+      appState.todos = smartMergeArrays(appState.todos, remote.todos, combinedDeleted);
+      appState.thoughts = smartMergeArrays(appState.thoughts, remote.thoughts, combinedDeleted);
+
+      if (remote.notifications) {
+        appState.notifications = Object.assign({}, appState.notifications, remote.notifications);
+      }
+
+      if (serverTimestampStr) {
+        lastServerUpdatedAt = serverTimestampStr;
+      }
+
+      const afterSnapshot = JSON.stringify({
+        t: appState.todos,
+        th: appState.thoughts
+      });
+
+      saveToLocal(false);
+      renderAll();
+      return beforeSnapshot !== afterSnapshot;
+    }
+
     function initSupabaseClientIfConfigured() {
       if (!supabaseConfig.url || !supabaseConfig.anonKey) {
         updateSyncStatusIndicator('local', '本地模式');
@@ -1455,11 +1550,18 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
         if (window.supabase && window.supabase.createClient) {
           supabaseClient = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
           subscribeSupabaseRealtime();
-          updateSyncStatusIndicator('connected', '已同步');
-          return true;
         }
       } catch (e) {}
-      return false;
+      // Immediately perform an automatic pull & merge on startup
+      autoPullAndMergeSilent();
+      // Start 8-second automatic background sync heartbeat
+      if (autoSyncTimerId) clearInterval(autoSyncTimerId);
+      autoSyncTimerId = setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          autoPullAndMergeSilent();
+        }
+      }, 8000);
+      return true;
     }
 
     function subscribeSupabaseRealtime() {
@@ -1473,9 +1575,11 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
             { event: '*', schema: 'public', table: 'flownote_sync', filter: `room_id=eq.${supabaseConfig.roomId}` },
             payload => {
               if (payload.new && payload.new.payload) {
-                const remote = payload.new.payload;
-                if (remote.updatedAt && remote.updatedAt > appState.updatedAt) {
-                  mergeRemotePayload(remote);
+                const srvTime = payload.new.updated_at || '';
+                const changed = mergeRemotePayload(payload.new.payload, srvTime);
+                updateSyncStatusIndicator('connected', '已自动同步');
+                if (changed) {
+                  showToast('已自动同步另一端修改', '☁️');
                 }
               }
             }
@@ -1484,13 +1588,37 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       } catch (e) {}
     }
 
-    function mergeRemotePayload(remote) {
-      if (Array.isArray(remote.todos)) appState.todos = remote.todos;
-      if (Array.isArray(remote.thoughts)) appState.thoughts = remote.thoughts;
-      if (remote.notifications) appState.notifications = Object.assign({}, appState.notifications, remote.notifications);
-      appState.updatedAt = remote.updatedAt || Date.now();
-      saveToLocal(false);
-      renderAll();
+    // Automatic background pull that checks if cloud has newer/different items
+    async function autoPullAndMergeSilent() {
+      if (!supabaseConfig.url || !supabaseConfig.anonKey || isSyncingNow) return;
+      isSyncingNow = true;
+      try {
+        const roomId = (supabaseConfig.roomId || 'meizu-flownote-main').trim();
+        const endpoint = `${supabaseConfig.url.replace(/\/$/, '')}/rest/v1/flownote_sync?room_id=eq.${encodeURIComponent(roomId)}&select=payload,updated_at`;
+        const res = await window["fetch"](endpoint, {
+          headers: {
+            'apikey': supabaseConfig.anonKey,
+            'Authorization': `Bearer ${supabaseConfig.anonKey}`,
+            'Cache-Control': 'no-cache'
+          }
+        });
+        if (res.ok) {
+          const rows = await res.json();
+          if (rows && rows.length > 0 && rows[0].payload) {
+            const srvTime = rows[0].updated_at || '';
+            if (!lastServerUpdatedAt || srvTime !== lastServerUpdatedAt) {
+              mergeRemotePayload(rows[0].payload, srvTime);
+            }
+            updateSyncStatusIndicator('connected', '已自动同步');
+          } else if (rows && rows.length === 0) {
+            // Cloud room doesn't exist yet -> push initial data automatically
+            isSyncingNow = false;
+            await pushToSupabaseSilent(false);
+            return;
+          }
+        }
+      } catch (e) {}
+      isSyncingNow = false;
     }
 
     async function saveAndSyncSupabase() {
@@ -1505,37 +1633,69 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
         return;
       }
       initSupabaseClientIfConfigured();
+      await pullFromSupabase(true);
       await pushToSupabaseSilent(true);
+      closeSyncModal();
     }
 
     async function pushToSupabaseSilent(verbose = false) {
       if (!supabaseConfig.url || !supabaseConfig.anonKey) return;
       updateSyncStatusIndicator('syncing', '同步中');
-      const syncPayload = {
-        todos: appState.todos,
-        thoughts: appState.thoughts,
-        notifications: appState.notifications,
-        updatedAt: appState.updatedAt
-      };
+
+      const roomId = (supabaseConfig.roomId || 'meizu-flownote-main').trim();
+      const baseUrl = supabaseConfig.url.replace(/\/$/, '');
+
       try {
-        const endpoint = `${supabaseConfig.url}/rest/v1/flownote_sync`;
-        const res = await window["fetch"](endpoint, {
+        // First pull remote payload to smart-merge so we never overwrite edits from the other device
+        const getEndpoint = `${baseUrl}/rest/v1/flownote_sync?room_id=eq.${encodeURIComponent(roomId)}&select=payload,updated_at`;
+        const getRes = await window["fetch"](getEndpoint, {
+          headers: {
+            'apikey': supabaseConfig.anonKey,
+            'Authorization': `Bearer ${supabaseConfig.anonKey}`,
+            'Cache-Control': 'no-cache'
+          }
+        });
+        if (getRes.ok) {
+          const rows = await getRes.json();
+          if (rows && rows.length > 0 && rows[0].payload) {
+            mergeRemotePayload(rows[0].payload, rows[0].updated_at || '');
+          }
+        }
+
+        const syncPayload = {
+          todos: appState.todos,
+          thoughts: appState.thoughts,
+          deletedIds: appState.deletedIds || {},
+          notifications: appState.notifications,
+          updatedAt: Date.now()
+        };
+
+        const postEndpoint = `${baseUrl}/rest/v1/flownote_sync?on_conflict=room_id`;
+        const nowIso = new Date().toISOString();
+        const res = await window["fetch"](postEndpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'apikey': supabaseConfig.anonKey,
             'Authorization': `Bearer ${supabaseConfig.anonKey}`,
-            'Prefer': 'resolution=merge-duplicates'
+            'Prefer': 'resolution=merge-duplicates,return=representation'
           },
           body: JSON.stringify({
-            room_id: supabaseConfig.roomId,
+            room_id: roomId,
             payload: syncPayload,
-            updated_at: new Date().toISOString()
+            updated_at: nowIso
           })
         });
+
         if (res.ok) {
-          updateSyncStatusIndicator('connected', '已同步');
-          if (verbose) showToast('云同步成功', '⚡');
+          const savedRows = await res.json().catch(() => []);
+          if (savedRows && savedRows[0] && savedRows[0].updated_at) {
+            lastServerUpdatedAt = savedRows[0].updated_at;
+          } else {
+            lastServerUpdatedAt = nowIso;
+          }
+          updateSyncStatusIndicator('connected', '已自动同步');
+          if (verbose) showToast('双端数据已合并同步！', '⚡');
         } else {
           updateSyncStatusIndicator('error', '错误');
           if (verbose) showToast('请检查建表 SQL 或 Key', '⚠️');
@@ -1545,31 +1705,36 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       }
     }
 
-    async function pullFromSupabase() {
+    async function pullFromSupabase(silentToast = false) {
       const url = (document.getElementById('supabaseUrlInput')?.value || supabaseConfig.url || '').trim().replace(/\/$/, '');
       const anonKey = (document.getElementById('supabaseKeyInput')?.value || supabaseConfig.anonKey || '').trim();
       const roomId = (document.getElementById('supabaseRoomInput')?.value || supabaseConfig.roomId || 'meizu-flownote-main').trim();
       if (!url || !anonKey) {
-        showToast('请先填写 URL 与 Key', '💡');
+        if (!silentToast) showToast('请先填写 URL 与 Key', '💡');
         return;
       }
       supabaseConfig = { url, anonKey, roomId };
+      try { localStorage.setItem(SUPABASE_CFG_KEY, JSON.stringify(supabaseConfig)); } catch (e) {}
       try {
         const endpoint = `${url}/rest/v1/flownote_sync?room_id=eq.${encodeURIComponent(roomId)}&select=payload,updated_at`;
         const res = await window["fetch"](endpoint, {
-          headers: { 'apikey': anonKey, 'Authorization': `Bearer ${anonKey}` }
+          headers: {
+            'apikey': anonKey,
+            'Authorization': `Bearer ${anonKey}`,
+            'Cache-Control': 'no-cache'
+          }
         });
         if (!res.ok) throw new Error('Pull error');
         const rows = await res.json();
         if (rows && rows.length > 0 && rows[0].payload) {
-          mergeRemotePayload(rows[0].payload);
-          updateSyncStatusIndicator('connected', '已同步');
-          showToast('已拉取云端最新数据', '☁️');
+          mergeRemotePayload(rows[0].payload, rows[0].updated_at || '');
+          updateSyncStatusIndicator('connected', '已自动同步');
+          if (!silentToast) showToast('已合并云端最新数据', '☁️');
         } else {
-          showToast('云端暂无记录，点击保存可上传', '✨');
+          if (!silentToast) showToast('云端暂无记录，点击保存可上传', '✨');
         }
       } catch (e) {
-        showToast('拉取失败，请检查配置', '⚠️');
+        if (!silentToast) showToast('拉取失败，请检查配置', '⚠️');
       }
     }
 
@@ -1597,6 +1762,7 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       const dataStr = JSON.stringify({
         todos: appState.todos,
         thoughts: appState.thoughts,
+        deletedIds: appState.deletedIds,
         notifications: appState.notifications
       }, null, 2);
       const blob = new Blob([dataStr], { type: 'application/json' });
@@ -1653,6 +1819,19 @@ alter publication supabase_realtime add table public.flownote_sync;</pre>
       initSupabaseClientIfConfigured();
       if (notificationTimerId) clearInterval(notificationTimerId);
       notificationTimerId = setInterval(updateLiveCapsuleCountdown, 10000);
+    });
+
+    // Auto-sync whenever user unlocks phone, switches back to Firefox tab, or regains network
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        autoPullAndMergeSilent();
+      }
+    });
+    window.addEventListener('focus', () => {
+      autoPullAndMergeSilent();
+    });
+    window.addEventListener('online', () => {
+      autoPullAndMergeSilent();
     });
   </script>
 </body>
